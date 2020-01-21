@@ -1,0 +1,9 @@
+[package]
+name = "hekk"
+version = "0.0.1"
+authors = [ "adumbidiot <nathaniel.daniel23@outlook.com>" ]
+edition = "2018"
+
+[dependencies]
+clap = "2.33.0"
+iphlpapi = { git = "https://github.com/adumbidiot/iphlpapi-rs", rev = "9d2708d"}
