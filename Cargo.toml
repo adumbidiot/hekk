@@ -5,5 +5,5 @@ authors = [ "adumbidiot <nathaniel.daniel23@outlook.com>" ]
 edition = "2018"
 
 [dependencies]
-clap = "2.33.0"
+clap = "2.33.3"
 iphlpapi = { git = "https://github.com/adumbidiot/iphlpapi-rs", rev = "9d2708d"}
