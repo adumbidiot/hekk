@@ -10,7 +10,7 @@ edition = "2018"
 build = "src/build.rs"
 
 [dependencies]
-iphlpapi = { git = "https://github.com/adumbidiot/iphlpapi-rs", rev = "535a2224cc54c9a337089d2cc28f7010f7068572" }
+iphlpapi = { git = "https://github.com/adumbidiot/iphlpapi-rs", rev = "634a981444e9a14d3241ff946fc02967606c1f13" }
 serde = { version = "1.0", features = [ "derive" ] }
 serde_json = "1.0"
 tauri = { version = "0.9", features = [ "event" ] }

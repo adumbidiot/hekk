@@ -2,7 +2,6 @@
     import * as tauri from 'tauri/api/tauri';
     import * as tauriEvent from 'tauri/api/event';
     import { Tabs, Tab, TabContent } from "carbon-components-svelte";
-    import AdapterInfo from './AdapterInfo.svelte';
     import AdapterInfoView from './AdapterInfoView.svelte';
     
     async function getVersion() {

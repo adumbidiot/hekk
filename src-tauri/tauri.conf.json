@@ -8,7 +8,7 @@
   "ctx": {},
   "tauri": {
     "embeddedServer": {
-      "active": true
+      "active": false
     },
     "bundle": {
       "active": true,
@@ -47,7 +47,7 @@
       "fullscreen": false
     },
     "security": {
-      "csp": "default-src blob: data: filesystem: ws: http: https: 'unsafe-eval' 'unsafe-inline'"
+      "csp": "default-src blob: data: filesystem: ws: http: https: res: 'unsafe-eval' 'unsafe-inline'"
     },
     "inliner": {
       "active": true

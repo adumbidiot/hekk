@@ -475,7 +475,7 @@ dependencies = [
 [[package]]
 name = "iphlpapi"
 version = "0.0.1"
-source = "git+https://github.com/adumbidiot/iphlpapi-rs?rev=535a2224cc54c9a337089d2cc28f7010f7068572#535a2224cc54c9a337089d2cc28f7010f7068572"
+source = "git+https://github.com/adumbidiot/iphlpapi-rs?rev=634a981444e9a14d3241ff946fc02967606c1f13#634a981444e9a14d3241ff946fc02967606c1f13"
 dependencies = [
  "winapi",
 ]
