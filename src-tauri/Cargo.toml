@@ -1,0 +1,30 @@
+[package]
+name = "hekk"
+version = "0.0.0"
+description = "A tool to hekk things"
+authors = [ "adumbidiot" ]
+license = "MIT"
+repository = ""
+default-run = "hekk"
+edition = "2018"
+build = "src/build.rs"
+
+[dependencies]
+iphlpapi = { git = "https://github.com/adumbidiot/iphlpapi-rs", rev = "535a2224cc54c9a337089d2cc28f7010f7068572" }
+serde = { version = "1.0", features = [ "derive" ] }
+serde_json = "1.0"
+tauri = { version = "0.9", features = [ "event" ] }
+
+[target."cfg(windows)".dependencies]
+winapi = { version = "0.3.9", features = [ "shellscalingapi" ] }
+
+[target."cfg(windows)".build-dependencies]
+winres = "0.1"
+
+[features]
+embedded-server = [ "tauri/embedded-server" ]
+no-server = [ "tauri/no-server" ]
+
+[[bin]]
+name = "hekk"
+path = "src/main.rs"
