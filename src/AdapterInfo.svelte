@@ -1,4 +1,6 @@
 <script>
+    import KeyValue from './KeyValue.svelte';
+
     export let adapterInfo;
 </script>
 
@@ -10,56 +12,37 @@
     .indented {
         margin-left: 20px;
     }
+    
+    .bold {
+        font-weight: bold;
+    }
 </style>
 
 <div class="content">
-    <div>
-        <b>Name:</b> 
-        {adapterInfo.name}
-    </div>
-    <div>
-        <b>Description:</b> 
-        {adapterInfo.description}
-    </div>
-    <div>
-        <b>Combo Index:</b> 
-        {adapterInfo.comboIndex}
-    </div>
-    <div>
-        <b>Hardware Address: </b>
-        {adapterInfo.address.map((n) => n.toString(16).toUpperCase().padStart(2, '0')).join('')}
-    </div>
+    <KeyValue key="Name" bind:value={adapterInfo.name} />
+    <KeyValue key="Description" bind:value={adapterInfo.description} />
+    <KeyValue key="Combo Index" bind:value={adapterInfo.comboIndex} />
+    <!-- TODO: Make this value part of AdapterInfo -->
+    <KeyValue key="Hardware Address" value={adapterInfo.address.map((n) => n.toString(16).toUpperCase().padStart(2, '0')).join('')} />
     <div>
         <div>
-            <b>Ip Addresses</b>
+            <span class="bold">Ip Addresses</span>
         </div>
         {#each adapterInfo.ipAddresses as addr}
             <div class = "indented">
-                <div>
-                    <b>Address: </b> 
-                    {addr.address}
-                </div>
-                <div>
-                    <b>Mask: </b>
-                    {addr.mask}
-                </div>
+                <KeyValue key="Address" bind:value={addr.address} />
+                <KeyValue key="Mask" bind:value={addr.mask} />
             </div>
         {/each}
     </div>
     <div>
         <div>
-            <b>Gateways</b>
+            <span class="bold">Gateways</span>
         </div>
         {#each adapterInfo.gateways as addr}
             <div class = "indented">
-                <div>
-                    <b>Address: </b> 
-                    {addr.address}
-                </div>
-                <div>
-                    <b>Mask: </b>
-                    {addr.mask}
-                </div>
+                <KeyValue key="Address" bind:value={addr.address} />
+                <KeyValue key="Mask" bind:value={addr.mask} />
             </div>
         {/each}
     </div>
