@@ -18,7 +18,7 @@ pub fn exec(_matches: &ArgMatches) {
         }
     };
 
-    for adapter in adapters {
+    for adapter in adapters.iter() {
         println!("{}", IpAdapterInfoDisplayRef(&adapter));
         println!("-----");
         println!();

@@ -6,4 +6,4 @@ edition = "2018"
 
 [dependencies]
 clap = "2.33.3"
-iphlpapi = { git = "https://github.com/adumbidiot/iphlpapi-rs", rev = "9d2708d"}
+iphlpapi = { git = "https://github.com/adumbidiot/iphlpapi-rs", rev = "634a981444e9a14d3241ff946fc02967606c1f13"}
