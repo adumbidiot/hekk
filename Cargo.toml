@@ -3,9 +3,9 @@ name = "hekk"
 version = "0.0.0"
 authors = [ "adumbidiot <nathaniel.daniel23@outlook.com>" ]
 edition = "2018"
+license = "MIT"
 
 [dependencies]
-clap = "2.33.3"
 iced = { version = "0.3.0", features = [ "tokio" ] }
 iced_aw = { git = "https://github.com/iced-rs/iced_aw", rev = "3dfce43396af457aaee835dbe281663a41a261ab", default-features = false, features = [ "tabs" ] }
 iphlpapi = { git = "https://github.com/adumbidiot/iphlpapi-rs", rev = "634a981444e9a14d3241ff946fc02967606c1f13" }
@@ -19,6 +19,7 @@ iced = { git = "https://github.com/hecrj/iced", rev = "e292821c3780fc5a57c835815
 iced_futures = { git = "https://github.com/hecrj/iced", rev = "e292821c3780fc5a57c835815efc7a232ce4dc32" }
 iced_native = { git = "https://github.com/hecrj/iced", rev = "e292821c3780fc5a57c835815efc7a232ce4dc32" }
 iced_graphics = { git = "https://github.com/hecrj/iced", rev = "e292821c3780fc5a57c835815efc7a232ce4dc32" }
+iced_style = { git = "https://github.com/hecrj/iced", rev = "e292821c3780fc5a57c835815efc7a232ce4dc32" }
 
 # Fix segfault on panic
 wgpu = { git = "https://github.com/gfx-rs/wgpu-rs" , rev = "3634abb0d560a2906d20c74efee9c2f16afb2503" }

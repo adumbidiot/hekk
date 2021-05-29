@@ -1,0 +1,86 @@
+targets = [
+    { triple = "x86_64-unknown-linux-gnu" },
+    { triple = "x86_64-unknown-linux-musl" },
+    { triple = "x86_64-apple-darwin" },
+    { triple = "x86_64-pc-windows-msvc" },
+]
+
+[advisories]
+vulnerability = "deny"
+unmaintained = "deny"
+notice = "deny"
+ignore = [
+    # Dammit winit
+    "RUSTSEC-2020-0016",
+]
+
+[licenses]
+unlicensed = "deny"
+copyleft = "deny"
+allow-osi-fsf-free = "neither"
+confidence-threshold = 0.93
+default = "deny"
+private = { ignore = true }
+allow = [ "Apache-2.0", "MIT", "Unlicense", "BSD-3-Clause", "MPL-2.0", "ISC", "BSL-1.0", "OFL-1.1" ]
+exceptions = []
+
+[bans]
+multiple-versions = "deny"
+highlight = "all"
+skip = [
+    # Dammit winit
+    { name = "winapi", version = "0.2.8" },
+    { name = "core-graphics", version = "0.19.2" },
+    { name = "core-foundation-sys", version = "0.7.0" },
+    { name = "core-foundation", version = "0.7.0" },
+    { name = "cfg-if", version = "0.1.10" },
+    
+    # Blocked on updates to smithay-toolkit
+    { name = "ttf-parser", version = "0.6.2" },
+    { name = "owned_ttf_parser", version = "0.6.0" },
+    { name = "nix", version = "0.18.0" },
+    { name = "libloading", version = "0.6.7" },
+    
+    # Blocked on twox-hash updating rand
+    { name = "rand_core", version = "0.5.1" },
+    { name = "rand_chacha", version = "0.2.2" },
+    { name = "rand", version = "0.7.3" },
+    { name = "getrandom", version = "0.1.16" },
+    { name = "dlib", version = "0.4.2" },
+]
+
+# Mostly soundness denies since the advisory lacks a section for soundess bugs
+deny = [        
+    # https://github.com/RustSec/advisory-db/pull/293
+    # NOTE: May be sound in the future: https://github.com/RustSec/advisory-db/pull/293#issuecomment-641898680
+    { name = "rio", version = "*" },
+
+    # https://github.com/RustSec/advisory-db/issues/299
+    { name = "smallvec", version = "<0.6.13" },
+    
+    # https://github.com/RustSec/advisory-db/pull/268
+    { name = "plutonium", version = "*" },
+    
+    # https://github.com/RustSec/advisory-db/pull/308
+    { name = "traitobject", version = "*" },
+    
+    # https://github.com/RustSec/advisory-db/issues/305
+    { name = "rental", version = "*" },
+    
+    # Appears to be moving towards integrating rio more tightly for io_uring support
+    { name = "sled", version = "*" },
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = [ "https://github.com/rust-lang/crates.io-index" ]
+allow-git = [
+    "https://github.com/gfx-rs/wgpu",
+    "https://github.com/gfx-rs/wgpu-rs",
+    "https://github.com/gfx-rs/gfx",
+    "https://github.com/gfx-rs/naga",
+    "https://github.com/adumbidiot/iphlpapi-rs",
+    "https://github.com/hecrj/iced",
+    "https://github.com/iced-rs/iced_aw",
+]
