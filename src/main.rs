@@ -161,7 +161,7 @@ impl Default for AdaptersInfoState {
     }
 }
 
-fn adapters_info_view<'a>(state: &'a mut AdaptersInfoState) -> Element<'a, Message> {
+fn adapters_info_view(state: &mut AdaptersInfoState) -> Element<'_, Message> {
     let title = Text::new("Adapter Info").size(36);
     let mut column = Column::new().spacing(10).push(title);
 
