@@ -30,7 +30,7 @@ pub enum Message {
 }
 
 pub struct AdaptersInfo {
-    adapters_info: Result<IpAdapterInfoList, std::io::Error>,
+    adapters_info: std::io::Result<IpAdapterInfoList>,
 
     scroll_state: iced::scrollable::State,
     button_state: iced::button::State,
