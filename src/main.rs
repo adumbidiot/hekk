@@ -13,10 +13,7 @@ use iced::{
     Length,
     Settings,
 };
-use iced_aw::{
-    graphics::icons::ICON_FONT,
-    TabLabel,
-};
+use iced_aw::TabLabel;
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -85,7 +82,7 @@ impl Application for App {
                 self.mac_spoof.view().map(Message::MacSpoof),
             )
             .tab_bar_style(GreyStyle)
-            .icon_font(ICON_FONT)
+            // .icon_font(ICON_FONT)
             .width(Length::Fill)
             .height(Length::Fill)
             .tab_bar_position(iced_aw::TabBarPosition::Top)

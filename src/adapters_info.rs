@@ -19,7 +19,10 @@ use iced::{
     Text,
     TextInput,
 };
-use iphlpapi::IpAdapterInfoList;
+use iphlpapi::{
+    IpAdapterInfo,
+    IpAddrString,
+};
 use std::time::Instant;
 
 #[derive(Debug, Clone)]
@@ -30,12 +33,10 @@ pub enum Message {
 }
 
 pub struct AdaptersInfo {
-    adapters_info: std::io::Result<IpAdapterInfoList>,
+    adapters_info: std::io::Result<Vec<AdapterState>>,
 
     scroll_state: iced::scrollable::State,
     button_state: iced::button::State,
-
-    adapter_info_state_vec: Vec<AdapterState>,
 }
 
 impl AdaptersInfo {
@@ -45,8 +46,6 @@ impl AdaptersInfo {
 
             scroll_state: iced::scrollable::State::new(),
             button_state: iced::button::State::new(),
-
-            adapter_info_state_vec: Vec::new(),
         };
         ret.refresh_adapters_info();
         ret
@@ -54,35 +53,11 @@ impl AdaptersInfo {
 
     pub fn refresh_adapters_info(&mut self) {
         let start = Instant::now();
-        self.adapters_info = iphlpapi::get_adapters_info();
+        let adapters_info = iphlpapi::get_adapters_info();
         println!("Got adapters info in {:?}", start.elapsed());
 
-        self.adapter_info_state_vec.clear();
-        self.adapter_info_state_vec.resize_with(
-            self.adapters_info
-                .as_ref()
-                .map_or(0, |adapters_info| adapters_info.iter().count()),
-            AdapterState::new,
-        );
-
-        if let Ok(adapters_info) = self.adapters_info.as_ref() {
-            for (adapter, state) in adapters_info
-                .iter()
-                .zip(self.adapter_info_state_vec.iter_mut())
-            {
-                state.ip_address_state_vec.clear();
-                state.ip_address_state_vec.resize_with(
-                    adapter.get_ip_address_list().iter().count(),
-                    IpAddressState::new,
-                );
-
-                state.gateway_address_state_vec.clear();
-                state.gateway_address_state_vec.resize_with(
-                    adapter.get_gateway_list().iter().count(),
-                    IpAddressState::new,
-                );
-            }
-        }
+        self.adapters_info = adapters_info
+            .map(|adapters_info| adapters_info.iter().map(AdapterState::new).collect());
     }
 
     pub fn update(&mut self, message: Message, _clipboard: &mut Clipboard) -> Command<Message> {
@@ -99,148 +74,14 @@ impl AdaptersInfo {
         let title = Text::new("Adapter Info").size(36);
         let mut column = Column::new().spacing(10).push(title);
 
-        match self.adapters_info.as_ref() {
+        match self.adapters_info.as_mut() {
             Ok(adapters) => {
-                for (i, (adapter, adapter_state)) in adapters
-                    .iter()
-                    .zip(self.adapter_info_state_vec.iter_mut())
-                    .enumerate()
-                {
-                    let ip_address_list_view = {
-                        let mut column = Column::new();
-
-                        for (ip, state) in adapter
-                            .get_ip_address_list()
-                            .iter()
-                            .zip(adapter_state.ip_address_state_vec.iter_mut())
-                        {
-                            column = column.push(
-                                TextInput::new(
-                                    &mut state.ip_address_state,
-                                    "",
-                                    &format!("IP Address: {}", ip.get_address().to_string_lossy()),
-                                    |_| Message::Nop,
-                                )
-                                .style(GreyStyleCopyTextHack)
-                                .size(15),
-                            );
-
-                            column = column.push(
-                                TextInput::new(
-                                    &mut state.mask_state,
-                                    "",
-                                    &format!("Mask: {}", ip.get_mask().to_string_lossy()),
-                                    |_| Message::Nop,
-                                )
-                                .style(GreyStyleCopyTextHack)
-                                .size(15),
-                            );
-                        }
-
+                for (i, adapter_state) in adapters.iter_mut().enumerate() {
+                    column = column.push(
                         Row::new()
                             .push(Space::new(Length::Units(20), Length::Shrink))
-                            .push(column)
-                    };
-
-                    let gateway_list_view = {
-                        let mut column = Column::new();
-                        for (ip, state) in adapter
-                            .get_gateway_list()
-                            .iter()
-                            .zip(adapter_state.gateway_address_state_vec.iter_mut())
-                        {
-                            column = column.push(
-                                TextInput::new(
-                                    &mut state.ip_address_state,
-                                    "",
-                                    &format!("Gateway: {}", ip.get_address().to_string_lossy()),
-                                    |_| Message::Nop,
-                                )
-                                .style(GreyStyleCopyTextHack)
-                                .size(15),
-                            );
-
-                            column = column.push(
-                                TextInput::new(
-                                    &mut state.mask_state,
-                                    "",
-                                    &format!("Mask: {}", ip.get_mask().to_string_lossy()),
-                                    |_| Message::Nop,
-                                )
-                                .style(GreyStyleCopyTextHack)
-                                .size(15),
-                            );
-                        }
-
-                        Row::new()
-                            .push(Space::new(Length::Units(20), Length::Shrink))
-                            .push(column)
-                    };
-
-                    let info_list_view = Row::new()
-                        .push(Space::new(Length::Units(20), Length::Shrink))
-                        .push(
-                            Column::new()
-                                .push(
-                                    TextInput::new(
-                                        &mut adapter_state.name_state,
-                                        "",
-                                        &format!("Name: {}", adapter.get_name().to_string_lossy()),
-                                        |_| Message::Nop,
-                                    )
-                                    .style(GreyStyleCopyTextHack)
-                                    .size(15),
-                                )
-                                .push(
-                                    TextInput::new(
-                                        &mut adapter_state.description_state,
-                                        "",
-                                        &format!(
-                                            "Description: {}",
-                                            adapter.get_description().to_string_lossy()
-                                        ),
-                                        |_| Message::Nop,
-                                    )
-                                    .style(GreyStyleCopyTextHack)
-                                    .size(15),
-                                )
-                                .push(
-                                    TextInput::new(
-                                        &mut adapter_state.combo_index_state,
-                                        "",
-                                        &format!("Combo Index: {}", adapter.get_combo_index()),
-                                        |_| Message::Nop,
-                                    )
-                                    .style(GreyStyleCopyTextHack)
-                                    .size(15),
-                                )
-                                .push(
-                                    TextInput::new(
-                                        &mut adapter_state.hardware_address_state,
-                                        "",
-                                        &format!(
-                                            "Hardware Address: {}",
-                                            format_address_to_string(adapter.get_address())
-                                        ),
-                                        |_| Message::Nop,
-                                    )
-                                    .style(GreyStyleCopyTextHack)
-                                    .size(15),
-                                )
-                                .push(Text::new("IP Address List").size(15))
-                                .push(ip_address_list_view)
-                                .push(Text::new("Gateway List").size(15))
-                                .push(gateway_list_view),
-                        );
-
-                    let adapter_view = Row::new()
-                        .push(Space::new(Length::Units(20), Length::Shrink))
-                        .push(
-                            Column::new()
-                                .push(Text::new(format!("Adapter {}", i)))
-                                .push(info_list_view),
-                        );
-                    column = column.push(adapter_view);
+                            .push(adapter_state.view(i)),
+                    );
                 }
             }
             Err(e) => {
@@ -299,54 +140,149 @@ fn format_address(mut f: impl std::fmt::Write, data: &[u8]) -> std::fmt::Result 
     Ok(())
 }
 
+fn ip_address_list_view<'a>(
+    ip_address_state_vec: &'a mut [IpAddress],
+) -> iced::Element<'a, Message> {
+    let mut column = Column::new();
+
+    for state in ip_address_state_vec.iter_mut() {
+        column = column.push(
+            TextInput::new(&mut state.ip_address_state, "", &state.ip_address, |_| {
+                Message::Nop
+            })
+            .style(GreyStyleCopyTextHack)
+            .size(15),
+        );
+
+        column = column.push(
+            TextInput::new(&mut state.mask_state, "", &state.mask, |_| Message::Nop)
+                .style(GreyStyleCopyTextHack)
+                .size(15),
+        );
+    }
+
+    Row::new()
+        .push(Space::new(Length::Units(20), Length::Shrink))
+        .push(column)
+        .into()
+}
+
 #[derive(Clone)]
 struct AdapterState {
+    name: String,
     name_state: iced::text_input::State,
+
+    description: String,
     description_state: iced::text_input::State,
+
+    combo_index: String,
     combo_index_state: iced::text_input::State,
+
+    hardware_address: String,
     hardware_address_state: iced::text_input::State,
 
-    ip_address_state_vec: Vec<IpAddressState>,
-    gateway_address_state_vec: Vec<IpAddressState>,
+    ip_address_list: Vec<IpAddress>,
+    gateway_address_list: Vec<IpAddress>,
 }
 
 impl AdapterState {
-    pub fn new() -> Self {
+    pub fn new(adapter: &IpAdapterInfo) -> Self {
         AdapterState {
+            name: format!("Name: {}", adapter.get_name().to_string_lossy()),
             name_state: iced::text_input::State::new(),
+
+            description: format!(
+                "Description: {}",
+                adapter.get_description().to_string_lossy()
+            ),
             description_state: iced::text_input::State::new(),
+
+            combo_index: format!("Combo Index: {}", adapter.get_combo_index()),
             combo_index_state: iced::text_input::State::new(),
+
+            hardware_address: format!(
+                "Hardware Address: {}",
+                format_address_to_string(adapter.get_address())
+            ),
             hardware_address_state: iced::text_input::State::new(),
 
-            ip_address_state_vec: Vec::new(),
-            gateway_address_state_vec: Vec::new(),
+            ip_address_list: adapter
+                .get_ip_address_list()
+                .iter()
+                .map(IpAddress::new)
+                .collect(),
+            gateway_address_list: adapter
+                .get_gateway_list()
+                .iter()
+                .map(IpAddress::new)
+                .collect(),
         }
     }
-}
 
-impl Default for AdapterState {
-    fn default() -> Self {
-        AdapterState::new()
+    fn view(&mut self, i: usize) -> iced::Element<Message> {
+        let info_list_view = Row::new()
+            .push(Space::new(Length::Units(20), Length::Shrink))
+            .push(
+                Column::new()
+                    .push(
+                        TextInput::new(&mut self.name_state, "", &self.name, |_| Message::Nop)
+                            .style(GreyStyleCopyTextHack)
+                            .size(15),
+                    )
+                    .push(
+                        TextInput::new(&mut self.description_state, "", &self.description, |_| {
+                            Message::Nop
+                        })
+                        .style(GreyStyleCopyTextHack)
+                        .size(15),
+                    )
+                    .push(
+                        TextInput::new(&mut self.combo_index_state, "", &self.combo_index, |_| {
+                            Message::Nop
+                        })
+                        .style(GreyStyleCopyTextHack)
+                        .size(15),
+                    )
+                    .push(
+                        TextInput::new(
+                            &mut self.hardware_address_state,
+                            "",
+                            &self.hardware_address,
+                            |_| Message::Nop,
+                        )
+                        .style(GreyStyleCopyTextHack)
+                        .size(15),
+                    )
+                    .push(Text::new("IP Address List").size(15))
+                    .push(ip_address_list_view(&mut self.ip_address_list))
+                    .push(Text::new("Gateway List").size(15))
+                    .push(ip_address_list_view(&mut self.gateway_address_list)),
+            );
+
+        Column::new()
+            .push(Text::new(format!("Adapter {}", i)))
+            .push(info_list_view)
+            .into()
     }
 }
 
 #[derive(Clone)]
-pub struct IpAddressState {
+pub struct IpAddress {
+    ip_address: String,
     ip_address_state: iced::text_input::State,
+
+    mask: String,
     mask_state: iced::text_input::State,
 }
 
-impl IpAddressState {
-    pub fn new() -> Self {
-        IpAddressState {
+impl IpAddress {
+    pub fn new(ip_address: &IpAddrString) -> Self {
+        IpAddress {
+            ip_address: format!("IP Address: {}", ip_address.get_address().to_string_lossy()),
             ip_address_state: iced::text_input::State::new(),
+
+            mask: format!("Mask: {}", ip_address.get_mask().to_string_lossy()),
             mask_state: iced::text_input::State::new(),
         }
-    }
-}
-
-impl Default for IpAddressState {
-    fn default() -> Self {
-        Self::new()
     }
 }
