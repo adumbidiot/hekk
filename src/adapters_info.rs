@@ -140,9 +140,7 @@ fn format_address(mut f: impl std::fmt::Write, data: &[u8]) -> std::fmt::Result 
     Ok(())
 }
 
-fn ip_address_list_view<'a>(
-    ip_address_state_vec: &'a mut [IpAddress],
-) -> iced::Element<'a, Message> {
+fn ip_address_list_view(ip_address_state_vec: &mut [IpAddress]) -> iced::Element<Message> {
     let mut column = Column::new();
 
     for state in ip_address_state_vec.iter_mut() {

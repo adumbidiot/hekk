@@ -5,6 +5,7 @@ use crate::{
     adapters_info::AdaptersInfo,
     mac_spoof::MacSpoof,
 };
+use anyhow::Context;
 use iced::{
     Application,
     Clipboard,
@@ -90,10 +91,12 @@ impl Application for App {
     }
 }
 
-fn main() -> iced::Result {
+fn main() -> anyhow::Result<()> {
+    skylight::init_mta_com_runtime().context("failed to init mta com runtime")?;
+
     let mut settings = Settings::default();
     settings.window.size = (640, 480);
-    App::run(settings)
+    App::run(settings).context("failed to run app")
 }
 
 pub struct GreyStyle;
@@ -216,4 +219,32 @@ impl iced::button::StyleSheet for ForegroundGreenButtonStyle {
     }
 
     // pub fn disabled(&self) -> Style { ... }
+}
+
+pub struct ForegroundGreenTextInputStyle;
+
+impl iced::widget::text_input::StyleSheet for ForegroundGreenTextInputStyle {
+    fn active(&self) -> iced::widget::text_input::Style {
+        iced::widget::text_input::Style {
+            background: iced::Color::from_rgb8(0x06, 0x3B, 0x00).into(),
+            border_radius: 5.0,
+            ..Default::default()
+        }
+    }
+
+    fn focused(&self) -> iced::widget::text_input::Style {
+        self.active()
+    }
+
+    fn placeholder_color(&self) -> iced::Color {
+        iced::Color::WHITE
+    }
+
+    fn value_color(&self) -> iced::Color {
+        iced::Color::WHITE
+    }
+
+    fn selection_color(&self) -> iced::Color {
+        iced::Color::from_rgb8(0x0A, 0x5D, 0x00)
+    }
 }
