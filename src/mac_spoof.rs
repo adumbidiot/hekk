@@ -1,6 +1,9 @@
 use crate::{
-    ForegroundGreenTextInputStyle,
-    GreyStyle,
+    style::{
+        ForegroundGreenTextInputStyle,
+        GreyStyle,
+    },
+    ComThread,
 };
 use iced::{
     Clipboard,
@@ -15,16 +18,10 @@ use iced::{
     Text,
     TextInput,
 };
-use netcon::{
-    NetConProperties,
-    NetConnection,
-    NetConnectionManager,
-};
 use std::{
     ffi::OsString,
     time::Instant,
 };
-use winapi::shared::guiddef::GUID;
 use winreg::{
     enums::{
         HKEY_LOCAL_MACHINE,
@@ -43,65 +40,21 @@ pub enum Message {
 
 pub struct MacSpoof {
     registry_adapters: std::io::Result<Vec<std::io::Result<Adapter>>>,
-    connection_manager: std::io::Result<NetConnectionManager>,
+
+    com_thread: ComThread,
 
     scroll_state: iced::scrollable::State,
 }
 
 impl MacSpoof {
-    pub fn new() -> Self {
-        let connection_manager = NetConnectionManager::new();
-        if let Err(e) = connection_manager.as_ref() {
-            println!("Failed to create connection manager: {}", e);
-        }
-
+    pub fn new(com_thread: ComThread) -> Self {
         let mut ret = MacSpoof {
             registry_adapters: Err(std::io::Error::from_raw_os_error(0)),
-            connection_manager,
+            com_thread,
             scroll_state: iced::scrollable::State::new(),
         };
         ret.refresh_adapters();
         ret
-    }
-
-    pub fn get_network_connections(
-        &self,
-    ) -> std::io::Result<Vec<(NetConnection, NetConProperties)>> {
-        let mut connections = Vec::with_capacity(4);
-        // TODO: Handle error instead of ignoring
-        if let Ok(connection_manager) = NetConnectionManager::new() {
-            // self.connection_manager.as_ref()
-            for connection_result in connection_manager.iter()? {
-                let connection = connection_result?;
-                let properties = connection.get_properties()?;
-                connections.push((connection, properties));
-            }
-        } else {
-            println!("NetConnectionManager is in the error state");
-        }
-
-        Ok(connections)
-    }
-
-    /// Turn an adapter off or on. Returns false if the adapter could not be found.
-    pub fn toggle_adapter(&mut self, target: &str, enable: bool) -> std::io::Result<bool> {
-        let connections = self.get_network_connections()?;
-        let target_connection = connections
-            .iter()
-            .find(|(_, props)| props.device_name().map(|s| s == target).unwrap_or(false));
-
-        let target_connection = match target_connection {
-            Some(connection) => connection,
-            None => return Ok(false),
-        };
-
-        if enable {
-            target_connection.0.connect()?;
-        } else {
-            target_connection.0.disconnect()?;
-        }
-
-        Ok(true)
     }
 
     pub fn refresh_adapters(&mut self) {
@@ -127,25 +80,40 @@ impl MacSpoof {
                     Ok(Some(Ok(adapter))) => {
                         let reset_adapter = matches!(message, AdapterMessage::SetHardwareAddress);
 
-                        let command = adapter
+                        let mut command = adapter
                             .update(message, clipboard)
                             .map(move |msg| Message::Adapter(i, msg));
 
                         if reset_adapter {
-                            match adapter.registry_adapter.get_description() {
+                            match adapter.registry_adapter.get_name() {
                                 Ok(name) => {
-                                    if let Err(e) = self.toggle_adapter(&name, false) {
-                                        eprintln!("Failed to turn off adapter: {}", e);
-                                    }
-                                    if let Err(e) = self.toggle_adapter(&name, true) {
-                                        eprintln!("Failed to turn on adapter: {}", e);
-                                    }
+                                    let com_thread = self.com_thread.clone();
+                                    command = Command::batch([
+                                        command,
+                                        Command::perform(
+                                            async move {
+                                                com_thread.reset_network_connection(name).await
+                                            },
+                                            |result| {
+                                                match result {
+                                                    Ok(_res) => {}
+                                                    Err(e) => {
+                                                        eprintln!(
+                                                            "Failed to reset adapter: {:?}",
+                                                            e
+                                                        );
+                                                    }
+                                                }
+                                                Message::Nop
+                                            },
+                                        ),
+                                    ]);
                                 }
                                 Err(e) => {
-                                    eprintln!("Failed to get description: {}", e);
+                                    eprintln!("Failed to get adapter name: {}", e);
                                 }
                             }
-                        }
+                        };
 
                         command
                     }
@@ -394,14 +362,4 @@ pub fn get_registry_adapters() -> std::io::Result<Vec<std::io::Result<RegistryAd
         .collect();
 
     Ok(keys)
-}
-
-fn fmt_guid_to_string(guid: &GUID) -> String {
-    format!(
-        "{:x}-{:x}-{:x}-{:x}",
-        guid.Data1,
-        guid.Data2,
-        guid.Data3,
-        u64::from_le_bytes(guid.Data4)
-    )
 }

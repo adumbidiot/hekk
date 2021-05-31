@@ -1090,6 +1090,7 @@ dependencies = [
  "iphlpapi",
  "netcon",
  "skylight",
+ "tokio",
  "wgpu",
  "winapi 0.3.9",
  "winreg",
@@ -2150,7 +2151,7 @@ dependencies = [
 [[package]]
 name = "skylight"
 version = "0.0.0"
-source = "git+https://github.com/adumbidiot/skylight-rs?branch=com#1fba6ce7028e2b8c7cbdccaaa5eb1d19b4b68791"
+source = "git+https://github.com/adumbidiot/skylight-rs?rev=5b25edce0186ef9fba0dbd0f7008083a20c896b9#5b25edce0186ef9fba0dbd0f7008083a20c896b9"
 dependencies = [
  "bitflags",
  "winapi 0.3.9",
