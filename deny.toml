@@ -83,4 +83,5 @@ allow-git = [
     "https://github.com/adumbidiot/iphlpapi-rs",
     "https://github.com/hecrj/iced",
     "https://github.com/iced-rs/iced_aw",
+    "https://github.com/adumbidiot/skylight-rs"
 ]

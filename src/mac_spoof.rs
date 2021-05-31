@@ -98,6 +98,7 @@ impl MacSpoof {
                                                 match result {
                                                     Ok(_res) => {}
                                                     Err(e) => {
+                                                        // TODO: Give user visual feedback
                                                         eprintln!(
                                                             "Failed to reset adapter: {:?}",
                                                             e
