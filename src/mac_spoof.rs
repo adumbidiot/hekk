@@ -20,6 +20,7 @@ use iced::{
 };
 use std::{
     ffi::OsString,
+    sync::Arc,
     time::Instant,
 };
 use winreg::{
@@ -77,47 +78,9 @@ impl MacSpoof {
                     .as_mut()
                     .map(|registry_adapters| registry_adapters.get_mut(i))
                 {
-                    Ok(Some(Ok(adapter))) => {
-                        let reset_adapter = matches!(message, AdapterMessage::SetHardwareAddress);
-
-                        let mut command = adapter
-                            .update(message, clipboard)
-                            .map(move |msg| Message::Adapter(i, msg));
-
-                        if reset_adapter {
-                            match adapter.registry_adapter.get_name() {
-                                Ok(name) => {
-                                    let com_thread = self.com_thread.clone();
-                                    command = Command::batch([
-                                        command,
-                                        Command::perform(
-                                            async move {
-                                                com_thread.reset_network_connection(name).await
-                                            },
-                                            |result| {
-                                                match result {
-                                                    Ok(_res) => {}
-                                                    Err(e) => {
-                                                        // TODO: Give user visual feedback
-                                                        eprintln!(
-                                                            "Failed to reset adapter: {:?}",
-                                                            e
-                                                        );
-                                                    }
-                                                }
-                                                Message::Nop
-                                            },
-                                        ),
-                                    ]);
-                                }
-                                Err(e) => {
-                                    eprintln!("Failed to get adapter name: {}", e);
-                                }
-                            }
-                        };
-
-                        command
-                    }
+                    Ok(Some(Ok(adapter))) => adapter
+                        .update(message, &self.com_thread, clipboard)
+                        .map(move |msg| Message::Adapter(i, msg)),
                     Ok(Some(Err(_e))) => {
                         println!("Cannot process Adapter Message for adapter {} as it is in the error state: {:#?}", i, message);
                         Command::none()
@@ -188,6 +151,7 @@ impl MacSpoof {
 pub enum AdapterMessage {
     UpdateHardwareAddressField(String),
     SetHardwareAddress,
+    DoneResetting(Arc<anyhow::Result<bool>>),
 
     Nop,
 }
@@ -197,28 +161,39 @@ pub struct Adapter {
 
     hardware_address: String,
     harware_address_state: iced::text_input::State,
+
+    is_resetting: bool,
 }
 
 impl Adapter {
     pub fn new(registry_adapter: RegistryAdapter) -> Self {
-        let hardware_address = registry_adapter
+        let mut ret = Adapter {
+            registry_adapter,
+
+            hardware_address: String::new(),
+            harware_address_state: iced::text_input::State::new(),
+
+            is_resetting: false,
+        };
+        ret.refresh_mac_address();
+        ret
+    }
+
+    pub fn refresh_mac_address(&mut self) {
+        self.hardware_address = self
+            .registry_adapter
             .get_hardware_address()
             .map(|res| {
                 res.map(|s| s.to_string_lossy().into_owned())
                     .unwrap_or_else(String::new)
             })
             .unwrap_or_else(|e| e.to_string());
-        Adapter {
-            registry_adapter,
-
-            hardware_address,
-            harware_address_state: iced::text_input::State::new(),
-        }
     }
 
     pub fn update(
         &mut self,
         message: AdapterMessage,
+        com_thread: &ComThread,
         _clipboard: &mut Clipboard,
     ) -> Command<AdapterMessage> {
         match message {
@@ -234,14 +209,44 @@ impl Adapter {
                 };
 
                 if let Err(e) = self.registry_adapter.set_hardware_address(hardware_address) {
-                    // TODO: Give user visual feedback
+                    // TODO: Give user visual feedback. Modal?
                     println!("Failed to set hardware address: {}", e);
+
+                    Command::none()
                 } else {
                     println!(
                         "Set Hardware Address to {}",
                         hardware_address.unwrap_or("not set")
                     );
+
+                    match self.registry_adapter.get_name() {
+                        Ok(name) => {
+                            self.is_resetting = true;
+
+                            let com_thread = com_thread.clone();
+                            Command::perform(
+                                async move { com_thread.reset_network_connection(name).await },
+                                move |result| AdapterMessage::DoneResetting(Arc::new(result)),
+                            )
+                        }
+                        Err(e) => {
+                            eprintln!("Failed to get adapter name: {}", e);
+                            Command::none()
+                        }
+                    }
                 }
+            }
+            AdapterMessage::DoneResetting(result) => {
+                match result.as_ref() {
+                    Ok(_result) => {}
+                    Err(e) => {
+                        // TODO: Give user visual feedback
+                        eprintln!("Failed to reset adapter: {:?}", e);
+                    }
+                }
+
+                self.is_resetting = false;
+                self.refresh_mac_address();
 
                 Command::none()
             }
@@ -284,6 +289,7 @@ impl Adapter {
                 ))
                 .size(15),
             )
+            .push(Text::new(format!("Is Resetting: {}", self.is_resetting)).size(15))
             .push(hardware_address);
 
         column.into()

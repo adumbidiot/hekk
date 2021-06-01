@@ -43,6 +43,7 @@ impl Application for App {
     type Flags = ();
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
+        // TODO: Restart the com thread or terminate the program when it exits prematurely.
         let (com_thread, _com_thread_has_exited) = ComThread::new();
 
         let adapters_info = AdaptersInfo::new();

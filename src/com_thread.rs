@@ -6,6 +6,8 @@ use netcon::{
 use std::time::Instant;
 use winapi::shared::guiddef::GUID;
 
+const MAX_BUFFERED_COMMANDS: usize = 32;
+
 pub type ComThreadHasExited = tokio::sync::oneshot::Receiver<anyhow::Result<()>>;
 pub type ComThreadResultSender<T> = tokio::sync::oneshot::Sender<T>;
 
@@ -17,6 +19,11 @@ enum ComCommand {
     },
 }
 
+/// A COM thread handle. It can be used to issue commands to the COM thread.
+///
+/// This app proxies COM functions to this thread for 2 purposes:
+/// 1. To not block the UI thread, as a lot of COM operations can take seconds to complete
+/// 2. To allow winit to be the brutal overlord that it is, as it nukes the multithreaded com apartments that I try to set up
 #[derive(Debug, Clone)]
 pub struct ComThread {
     command_tx: tokio::sync::mpsc::Sender<ComCommand>,
@@ -24,7 +31,7 @@ pub struct ComThread {
 
 impl ComThread {
     pub fn new() -> (Self, ComThreadHasExited) {
-        let (command_tx, mut command_rx) = tokio::sync::mpsc::channel(32);
+        let (command_tx, mut command_rx) = tokio::sync::mpsc::channel(MAX_BUFFERED_COMMANDS);
         let (exited_tx, exited_rx) = tokio::sync::oneshot::channel();
 
         std::thread::spawn(move || {
@@ -94,14 +101,16 @@ fn process_command(connection_manager: &NetConnectionManager, command: ComComman
 
 fn reset_network_connection(
     connection_manager: &NetConnectionManager,
-    device_name: &str,
+    adapter_name: &str,
 ) -> anyhow::Result<bool> {
-    let connection = find_network_connection(&connection_manager, device_name)
+    let connection = find_network_connection(&connection_manager, adapter_name)
         .context("failed to get network connection")?
         .context("failed to find network connection")?;
 
     let mut is_success = true;
 
+    // For now, we allow errors here in case the adpater is already disabled or something.
+    // TODO: Think about a better way to handle this
     if let Err(e) = connection.disconnect() {
         println!("Failed to disable connection: {}", e);
         is_success = false;
@@ -123,8 +132,9 @@ fn find_network_connection(
         let connection = connection_result?;
         let properties = connection.get_properties()?;
 
-        let formatted_guid = format!("{{{}}}", fmt_guid_to_string(properties.guid()));
-        if formatted_guid == adapter_name {
+        // Adapter names have the form {<guid>}.
+        let formatted_guid = fmt_guid_to_string(properties.guid());
+        if formatted_guid == adapter_name.trim_start_matches('{').trim_end_matches('}') {
             return Ok(Some(connection));
         }
     }
