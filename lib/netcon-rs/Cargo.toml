@@ -1,0 +1,12 @@
+[package]
+name = "netcon"
+version = "0.0.0"
+authors = [ "adumbidiot <nathaniel.daniel23@outlook.com>" ]
+edition = "2018"
+license = "MIT"
+
+[dependencies]
+bitflags = "1.2.1"
+netcon-sys = { path = "../netcon-sys" }
+skylight = { git = "https://github.com/adumbidiot/skylight-rs", rev = "5b25edce0186ef9fba0dbd0f7008083a20c896b9", features = [ "objbase" ] }
+winapi = { version = "0.3.9", features = [ "winbase" ] }

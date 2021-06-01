@@ -6,12 +6,21 @@ edition = "2018"
 license = "MIT"
 
 [dependencies]
+anyhow = "1.0.40"
 iced = { version = "0.3.0", features = [ "tokio" ] }
 iced_aw = { git = "https://github.com/iced-rs/iced_aw", rev = "3dfce43396af457aaee835dbe281663a41a261ab", default-features = false, features = [ "tabs" ] }
 iphlpapi = { git = "https://github.com/adumbidiot/iphlpapi-rs", rev = "8595667546ef2e626c7a4057796d1f7d40f3b469" }
+netcon = { path = "lib/netcon-rs" }
+skylight = { git = "https://github.com/adumbidiot/skylight-rs", rev = "5b25edce0186ef9fba0dbd0f7008083a20c896b9", features = [ "objbase" ] }
+tokio = { version = "1.0.0", features = [ "sync" ] }
+winapi = "0.3.9"
+winreg = "0.9.0"
 
 # Force use of wgpu that has needed fixes on master
 wgpu = "=0.8.0"
+
+[build-dependencies]
+winres = "0.1.11"
 
 [patch.crates-io]
 # Get latest wgpu
@@ -27,3 +36,9 @@ wgpu = { git = "https://github.com/gfx-rs/wgpu-rs" , rev = "3634abb0d560a2906d20
 [profile.release]
 codegen-units = 1
 lto = true
+
+[workspace]
+members = [
+    "lib/netcon-sys",
+    "lib/netcon-rs",
+]

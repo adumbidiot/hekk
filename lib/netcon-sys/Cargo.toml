@@ -1,0 +1,9 @@
+[package]
+name = "netcon-sys"
+authors = [ "adumbidiot <nathaniel.daniel23@outlook.com>" ]
+version = "0.0.0"
+edition = "2018"
+license = "MIT"
+
+[dependencies]
+winapi = { version = "0.3.8", features = [ "winerror", "objbase" ] }
