@@ -5,6 +5,7 @@ use crate::{
     },
     ComThread,
 };
+use anyhow::Context;
 use iced::{
     Clipboard,
     Column,
@@ -151,7 +152,7 @@ impl MacSpoof {
 pub enum AdapterMessage {
     UpdateHardwareAddressField(String),
     SetHardwareAddress,
-    DoneResetting(Arc<anyhow::Result<bool>>),
+    DoneResetting(Arc<anyhow::Result<()>>),
 
     Nop,
 }
@@ -208,9 +209,13 @@ impl Adapter {
                     Some(self.hardware_address.as_str())
                 };
 
-                if let Err(e) = self.registry_adapter.set_hardware_address(hardware_address) {
+                if let Err(e) = self
+                    .registry_adapter
+                    .set_hardware_address(hardware_address)
+                    .context("failed to set hardware address")
+                {
                     // TODO: Give user visual feedback. Modal?
-                    println!("Failed to set hardware address: {}", e);
+                    println!("{:?}", e);
 
                     Command::none()
                 } else {
@@ -238,7 +243,7 @@ impl Adapter {
             }
             AdapterMessage::DoneResetting(result) => {
                 match result.as_ref() {
-                    Ok(_result) => {}
+                    Ok(()) => {}
                     Err(e) => {
                         // TODO: Give user visual feedback
                         eprintln!("Failed to reset adapter: {:?}", e);

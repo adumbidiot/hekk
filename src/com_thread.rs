@@ -1,5 +1,6 @@
 use anyhow::Context;
 use netcon::{
+    NetConProperties,
     NetConnection,
     NetConnectionManager,
 };
@@ -15,7 +16,7 @@ pub type ComThreadResultSender<T> = tokio::sync::oneshot::Sender<T>;
 enum ComCommand {
     ResetNetworkConnection {
         adapter_name: String,
-        responder: ComThreadResultSender<anyhow::Result<bool>>,
+        responder: ComThreadResultSender<anyhow::Result<()>>,
     },
 }
 
@@ -66,7 +67,7 @@ impl ComThread {
     /// Reset the network adapter.
     /// Returns an error if the adpater could not be located.
     /// Returns false if the adapter could not be restarted.
-    pub async fn reset_network_connection(&self, adapter_name: String) -> anyhow::Result<bool> {
+    pub async fn reset_network_connection(&self, adapter_name: String) -> anyhow::Result<()> {
         let start = Instant::now();
         let (responder, rx) = tokio::sync::oneshot::channel();
         self.command_tx
@@ -102,32 +103,21 @@ fn process_command(connection_manager: &NetConnectionManager, command: ComComman
 fn reset_network_connection(
     connection_manager: &NetConnectionManager,
     adapter_name: &str,
-) -> anyhow::Result<bool> {
-    let connection = find_network_connection(&connection_manager, adapter_name)
+) -> anyhow::Result<()> {
+    let (connection, _properties) = find_network_connection(&connection_manager, adapter_name)
         .context("failed to get network connection")?
         .context("failed to find network connection")?;
 
-    let mut is_success = true;
+    connection.disconnect()?;
+    connection.connect()?;
 
-    // For now, we allow errors here in case the adpater is already disabled or something.
-    // TODO: Think about a better way to handle this
-    if let Err(e) = connection.disconnect() {
-        println!("Failed to disable connection: {}", e);
-        is_success = false;
-    }
-
-    if let Err(e) = connection.connect() {
-        println!("Failed to enable connection: {}", e);
-        is_success = false;
-    }
-
-    Ok(is_success)
+    Ok(())
 }
 
 fn find_network_connection(
     connection_manager: &NetConnectionManager,
     adapter_name: &str,
-) -> std::io::Result<Option<NetConnection>> {
+) -> std::io::Result<Option<(NetConnection, NetConProperties)>> {
     for connection_result in connection_manager.iter()? {
         let connection = connection_result?;
         let properties = connection.get_properties()?;
@@ -135,7 +125,7 @@ fn find_network_connection(
         // Adapter names have the form {<guid>}.
         let formatted_guid = fmt_guid_to_string(properties.guid());
         if formatted_guid == adapter_name.trim_start_matches('{').trim_end_matches('}') {
-            return Ok(Some(connection));
+            return Ok(Some((connection, properties)));
         }
     }
 
