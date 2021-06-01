@@ -134,7 +134,7 @@ fn find_network_connection(
 
 pub fn fmt_guid_to_string(guid: &GUID) -> String {
     format!(
-        "{:X}-{:X}-{:X}-{:X}{:X}-{:X}{:X}{:X}{:X}{:X}{:X}",
+        "{:02X}-{:02X}-{:02X}-{:02X}{:02X}-{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}",
         guid.Data1,
         guid.Data2,
         guid.Data3,
