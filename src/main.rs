@@ -1,8 +1,16 @@
 mod adapters_info;
 mod com_thread;
+mod console;
 mod mac_spoof;
+mod settings;
 mod style;
 
+pub use crate::console::{
+    ConsoleHandle,
+    ConsoleHandleType,
+    ConsoleModeFlags,
+    ConsoleWindow,
+};
 use crate::{
     adapters_info::AdaptersInfo,
     com_thread::ComThread,
@@ -26,6 +34,7 @@ pub enum Message {
 
     AdaptersInfo(crate::adapters_info::Message),
     MacSpoof(crate::mac_spoof::Message),
+    Settings(crate::settings::Message),
 
     Nop,
 }
@@ -35,6 +44,7 @@ pub struct App {
 
     adapters_info: AdaptersInfo,
     mac_spoof: MacSpoof,
+    settings: crate::settings::Settings,
 }
 
 impl Application for App {
@@ -48,6 +58,7 @@ impl Application for App {
 
         let adapters_info = AdaptersInfo::new();
         let mac_spoof = MacSpoof::new(com_thread);
+        let settings = crate::settings::Settings::new();
 
         (
             App {
@@ -55,6 +66,7 @@ impl Application for App {
 
                 adapters_info,
                 mac_spoof,
+                settings,
             },
             Command::none(),
         )
@@ -75,6 +87,7 @@ impl Application for App {
                 .update(msg, clipboard)
                 .map(Message::AdaptersInfo),
             Message::MacSpoof(msg) => self.mac_spoof.update(msg, clipboard).map(Message::MacSpoof),
+            Message::Settings(msg) => self.settings.update(msg, clipboard).map(Message::Settings),
             Message::Nop => Command::none(),
         }
     }
@@ -88,6 +101,10 @@ impl Application for App {
             .push(
                 TabLabel::Text("Spoof MAC".to_string()),
                 self.mac_spoof.view().map(Message::MacSpoof),
+            )
+            .push(
+                TabLabel::Text("Settings".to_string()),
+                self.settings.view().map(Message::Settings),
             )
             .tab_bar_style(GreyStyle)
             // .icon_font(ICON_FONT)
