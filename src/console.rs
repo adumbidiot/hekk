@@ -41,6 +41,7 @@ use winapi::{
             ShowWindow,
             SW_HIDE,
             SW_SHOW,
+            SW_SHOWNOACTIVATE,
         },
     },
 };
@@ -63,6 +64,13 @@ impl ConsoleWindow {
     pub fn show(&self) {
         unsafe {
             ShowWindow(self.0, SW_SHOW);
+        }
+    }
+
+    /// Show console window without activating it
+    pub fn show_no_activate(&self) {
+        unsafe {
+            ShowWindow(self.0, SW_SHOWNOACTIVATE);
         }
     }
 
@@ -119,8 +127,6 @@ impl ConsoleHandle {
         if ret == 0 {
             return Err(std::io::Error::last_os_error());
         }
-
-        println!("{:X}", flags & !ConsoleModeFlags::all().bits());
 
         Ok(ConsoleModeFlags::from_bits(flags).expect("unknown console mode flag bits detected"))
     }

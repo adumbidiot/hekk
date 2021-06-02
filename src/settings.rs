@@ -63,7 +63,7 @@ impl Settings {
             Message::ConsoleToggled(show) => {
                 if let Some(console) = self.console.as_ref() {
                     if show {
-                        console.show();
+                        console.show_no_activate();
                     } else {
                         console.hide();
                     }
