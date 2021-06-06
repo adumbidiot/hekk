@@ -30,7 +30,7 @@ use iced_aw::TabLabel;
 use once_cell::sync::Lazy;
 
 pub struct ThreadLogger {
-    sender: crossbeam_channel::Sender<String>,
+    sender: crossbeam_channel::Sender<(log::Level, String)>,
 
     handle: std::thread::JoinHandle<()>,
 }
@@ -41,7 +41,22 @@ impl ThreadLogger {
         let handle = std::thread::spawn(move || {
             println!("Starting logger thread");
 
-            for msg in rx {
+            for (level, msg) in rx {
+                match level {
+                    log::Level::Info => {
+                        print!("\x1B[96m");
+                    }
+                    log::Level::Error => {
+                        print!("\x1B[91m");
+                    }
+                    log::Level::Warn => {
+                        print!("\x1B[93m");
+                    }
+                    _ => {}
+                }
+                print!("[{}] ", level);
+                print!("\x1B[0m");
+
                 println!("{}", msg);
             }
 
@@ -71,7 +86,7 @@ impl log::Log for ThreadLogger {
         }
 
         self.sender
-            .send(format!("[{}] {}", record.level(), record.args()))
+            .send((record.level(), format!("{}", record.args())))
             .expect("failed to send message to logger thread");
     }
 
