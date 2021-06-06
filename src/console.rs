@@ -23,7 +23,9 @@ use winapi::{
         wincon::{
             GetConsoleWindow,
             DISABLE_NEWLINE_AUTO_RETURN,
+            ENABLE_AUTO_POSITION,
             ENABLE_ECHO_INPUT,
+            ENABLE_EXTENDED_FLAGS,
             ENABLE_INSERT_MODE,
             ENABLE_LINE_INPUT,
             ENABLE_LVB_GRID_WORLDWIDE,
@@ -60,14 +62,17 @@ impl ConsoleWindow {
         }
     }
 
-    /// Show console window
+    /// Show console window.
+    ///
+    /// Using this in a winit app makes winit not recieve window events anymore, even if the winit window is refocused.
+    /// Who's bug is this?!?!
     pub fn show(&self) {
         unsafe {
             ShowWindow(self.0, SW_SHOW);
         }
     }
 
-    /// Show console window without activating it
+    /// Show console window without activating it.
     pub fn show_no_activate(&self) {
         unsafe {
             ShowWindow(self.0, SW_SHOWNOACTIVATE);
@@ -143,6 +148,7 @@ impl ConsoleHandle {
     }
 }
 
+// All hail ReactOS: https://doxygen.reactos.org/d8/d14/wincon_8h_source.html
 bitflags! {
     pub struct ConsoleModeFlags: DWORD {
         const ENABLE_ECHO_INPUT = ENABLE_ECHO_INPUT;
@@ -161,7 +167,9 @@ bitflags! {
         const DISABLE_NEWLINE_AUTO_RETURN = DISABLE_NEWLINE_AUTO_RETURN;
         const ENABLE_LVB_GRID_WORLDWIDE = ENABLE_LVB_GRID_WORLDWIDE;
 
-        const UNKNOWN_1 = 0x100;
-        const UNKNOWN_2 = 0x80;
+
+        // Undocumented?
+        const ENABLE_EXTENDED_FLAGS = ENABLE_EXTENDED_FLAGS;
+        const ENABLE_AUTO_POSITION = ENABLE_AUTO_POSITION;
     }
 }

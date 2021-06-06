@@ -19,6 +19,10 @@ use iced::{
     Text,
     TextInput,
 };
+use log::{
+    error,
+    info,
+};
 use std::{
     ffi::OsString,
     sync::Arc,
@@ -67,7 +71,7 @@ impl MacSpoof {
                 .map(|adapter| adapter.map(Adapter::new))
                 .collect()
         });
-        println!("Got registry adapters in {:?}", start.elapsed());
+        info!("Got registry adapters in {:?}", start.elapsed());
     }
 
     pub fn update(&mut self, message: Message, clipboard: &mut Clipboard) -> Command<Message> {
@@ -83,15 +87,15 @@ impl MacSpoof {
                         .update(message, &self.com_thread, clipboard)
                         .map(move |msg| Message::Adapter(i, msg)),
                     Ok(Some(Err(_e))) => {
-                        println!("Cannot process Adapter Message for adapter {} as it is in the error state: {:#?}", i, message);
+                        error!("Cannot process Adapter Message for adapter {} as it is in the error state: {:#?}", i, message);
                         Command::none()
                     }
                     Ok(None) => {
-                        println!("Cannot process Adapter Message for adapter {} as it does not exist: {:#?}", i, message);
+                        error!("Cannot process Adapter Message for adapter {} as it does not exist: {:#?}", i, message);
                         Command::none()
                     }
                     Err(_e) => {
-                        println!("`registry_adapters` is in error state. Cannot process Adapter Message for adapter {}: {:#?}", i, message);
+                        error!("`registry_adapters` is in error state. Cannot process Adapter Message for adapter {}: {:#?}", i, message);
                         Command::none()
                     }
                 }
@@ -215,11 +219,11 @@ impl Adapter {
                     .context("failed to set hardware address")
                 {
                     // TODO: Give user visual feedback. Modal?
-                    println!("{:?}", e);
+                    error!("{:?}", e);
 
                     Command::none()
                 } else {
-                    println!(
+                    info!(
                         "Set Hardware Address to {}",
                         hardware_address.unwrap_or("not set")
                     );
@@ -235,7 +239,7 @@ impl Adapter {
                             )
                         }
                         Err(e) => {
-                            eprintln!("Failed to get adapter name: {}", e);
+                            error!("Failed to get adapter name: {}", e);
                             Command::none()
                         }
                     }
@@ -246,7 +250,7 @@ impl Adapter {
                     Ok(()) => {}
                     Err(e) => {
                         // TODO: Give user visual feedback
-                        eprintln!("Failed to reset adapter: {:?}", e);
+                        error!("Failed to reset adapter: {:?}", e);
                     }
                 }
 

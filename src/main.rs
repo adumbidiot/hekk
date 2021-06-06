@@ -27,6 +27,64 @@ use iced::{
     Settings,
 };
 use iced_aw::TabLabel;
+use once_cell::sync::Lazy;
+
+pub struct ThreadLogger {
+    sender: crossbeam_channel::Sender<String>,
+
+    handle: std::thread::JoinHandle<()>,
+}
+
+impl ThreadLogger {
+    pub fn new() -> Self {
+        let (tx, rx) = crossbeam_channel::unbounded();
+        let handle = std::thread::spawn(move || {
+            println!("Starting logger thread");
+
+            for msg in rx {
+                println!("{}", msg);
+            }
+
+            println!("Shutting down logger thread");
+        });
+
+        Self { sender: tx, handle }
+    }
+
+    pub fn close(self) -> anyhow::Result<()> {
+        drop(self.sender);
+        self.handle
+            .join()
+            .map_err(|_e| anyhow::anyhow!("logger thread panicked"))?;
+        Ok(())
+    }
+}
+
+impl log::Log for ThreadLogger {
+    fn enabled(&self, metadata: &log::Metadata) -> bool {
+        metadata.target().starts_with("hekk")
+    }
+
+    fn log(&self, record: &log::Record) {
+        if !self.enabled(record.metadata()) {
+            return;
+        }
+
+        self.sender
+            .send(format!("[{}] {}", record.level(), record.args()))
+            .expect("failed to send message to logger thread");
+    }
+
+    fn flush(&self) {}
+}
+
+impl Default for ThreadLogger {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+static LOGGER: Lazy<ThreadLogger> = Lazy::new(ThreadLogger::new);
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -54,7 +112,9 @@ impl Application for App {
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
         // TODO: Restart the com thread or terminate the program when it exits prematurely.
-        let (com_thread, _com_thread_has_exited) = ComThread::new();
+        // TODO: Gracefully handle com thread not spawning somehow instead of panicking.
+        let (com_thread, _com_thread_has_exited) =
+            ComThread::new().expect("failed to create com thread");
 
         let adapters_info = AdaptersInfo::new();
         let mac_spoof = MacSpoof::new(com_thread);
@@ -116,6 +176,11 @@ impl Application for App {
 }
 
 fn main() -> anyhow::Result<()> {
+    if let Err(e) = log::set_logger(&*LOGGER) {
+        anyhow::bail!("failed to set logger: {}", e);
+    }
+    log::set_max_level(log::LevelFilter::Info);
+
     let mut settings = Settings::default();
     settings.window.size = (640, 480);
     App::run(settings).context("failed to run app")?;
