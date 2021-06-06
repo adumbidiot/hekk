@@ -37,30 +37,34 @@ pub struct ThreadLogger {
 
 impl ThreadLogger {
     pub fn new() -> Self {
-        let (tx, rx) = crossbeam_channel::unbounded();
+        fn process_message((level, msg): (log::Level, &str)) {
+            match level {
+                log::Level::Info => {
+                    print!("\x1B[96m");
+                }
+                log::Level::Error => {
+                    print!("\x1B[91m");
+                }
+                log::Level::Warn => {
+                    print!("\x1B[93m");
+                }
+                _ => {}
+            }
+            print!("[{}] ", level);
+            print!("\x1B[0m");
+
+            println!("{}", msg);
+        }
+
+        let (tx, rx) = crossbeam_channel::unbounded::<(log::Level, String)>();
         let handle = std::thread::spawn(move || {
-            println!("Starting logger thread");
+            process_message((log::Level::Info, "Starting logger thread"));
 
             for (level, msg) in rx {
-                match level {
-                    log::Level::Info => {
-                        print!("\x1B[96m");
-                    }
-                    log::Level::Error => {
-                        print!("\x1B[91m");
-                    }
-                    log::Level::Warn => {
-                        print!("\x1B[93m");
-                    }
-                    _ => {}
-                }
-                print!("[{}] ", level);
-                print!("\x1B[0m");
-
-                println!("{}", msg);
+                process_message((level, msg.as_str()))
             }
 
-            println!("Shutting down logger thread");
+            process_message((log::Level::Info, "Shutting down logger thread"));
         });
 
         Self { sender: tx, handle }
