@@ -23,6 +23,7 @@ use iphlpapi::{
     IpAdapterInfo,
     IpAddrString,
 };
+use log::info;
 use std::time::Instant;
 
 #[derive(Debug, Clone)]
@@ -54,7 +55,7 @@ impl AdaptersInfo {
     pub fn refresh_adapters_info(&mut self) {
         let start = Instant::now();
         let adapters_info = iphlpapi::get_adapters_info();
-        println!("Got adapters info in {:?}", start.elapsed());
+        info!("Got adapters info in {:?}", start.elapsed());
 
         self.adapters_info = adapters_info
             .map(|adapters_info| adapters_info.iter().map(AdapterState::new).collect());

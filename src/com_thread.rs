@@ -1,4 +1,5 @@
 use anyhow::Context;
+use log::info;
 use netcon::{
     NetConProperties,
     NetConnection,
@@ -31,21 +32,24 @@ pub struct ComThread {
 }
 
 impl ComThread {
-    pub fn new() -> (Self, ComThreadHasExited) {
+    pub fn new() -> anyhow::Result<(Self, ComThreadHasExited)> {
         let (command_tx, mut command_rx) = tokio::sync::mpsc::channel(MAX_BUFFERED_COMMANDS);
         let (exited_tx, exited_rx) = tokio::sync::oneshot::channel();
 
-        std::thread::spawn(move || {
-            println!("Starting COM thread");
-            if let Err(e) =
-                skylight::init_mta_com_runtime().context("failed to init mta com runtime")
-            {
-                let _ = exited_tx.send(Err(e)).is_ok();
-                return;
-            }
+        std::thread::Builder::new()
+            .name("com-thread".into())
+            .spawn(move || {
+                info!("Starting COM thread");
+                if let Err(e) =
+                    skylight::init_mta_com_runtime().context("failed to init mta com runtime")
+                {
+                    let _ = exited_tx.send(Err(e)).is_ok();
+                    return;
+                }
 
-            let connection_manager =
-                match NetConnectionManager::new().context("failed to create connection manager") {
+                let connection_manager = match NetConnectionManager::new()
+                    .context("failed to create connection manager")
+                {
                     Ok(connection_manager) => connection_manager,
                     Err(e) => {
                         let _ = exited_tx.send(Err(e)).is_ok();
@@ -53,20 +57,20 @@ impl ComThread {
                     }
                 };
 
-            while let Some(command) = command_rx.blocking_recv() {
-                process_command(&connection_manager, command);
-            }
+                while let Some(command) = command_rx.blocking_recv() {
+                    process_command(&connection_manager, command);
+                }
 
-            println!("Shutting down COM thread");
-            let _ = exited_tx.send(Ok(())).is_ok();
-        });
+                info!("Shutting down COM thread");
+                let _ = exited_tx.send(Ok(())).is_ok();
+            })
+            .context("failed to spawn com thread")?;
 
-        (Self { command_tx }, exited_rx)
+        Ok((Self { command_tx }, exited_rx))
     }
 
     /// Reset the network adapter.
-    /// Returns an error if the adpater could not be located.
-    /// Returns false if the adapter could not be restarted.
+    /// Returns an error if the adpater could not be located or restarted.
     pub async fn reset_network_connection(&self, adapter_name: String) -> anyhow::Result<()> {
         let start = Instant::now();
         let (responder, rx) = tokio::sync::oneshot::channel();
@@ -78,7 +82,7 @@ impl ComThread {
             .await
             .context("failed to send request")?;
         let result = rx.await.context("failed to receive result")?;
-        println!(
+        info!(
             "Reset network adapter '{}' in {:?}",
             adapter_name,
             start.elapsed()
