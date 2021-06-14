@@ -14,7 +14,7 @@ iced_aw = { git = "https://github.com/iced-rs/iced_aw", rev = "3dfce43396af457aa
 iphlpapi = { git = "https://github.com/adumbidiot/iphlpapi-rs", rev = "8595667546ef2e626c7a4057796d1f7d40f3b469" }
 log = "0.4.14"
 netcon = { path = "lib/netcon-rs" }
-once_cell = "1.7.2"
+once_cell = "1.8.0"
 skylight = { git = "https://github.com/adumbidiot/skylight-rs", rev = "5b25edce0186ef9fba0dbd0f7008083a20c896b9", features = [ "objbase" ] }
 tokio = { version = "1.6.1", features = [ "sync" ] }
 winapi = "0.3.9"
