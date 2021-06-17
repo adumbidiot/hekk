@@ -108,7 +108,7 @@ fn reset_network_connection(
     connection_manager: &NetConnectionManager,
     adapter_name: &str,
 ) -> anyhow::Result<()> {
-    let (connection, _properties) = find_network_connection(&connection_manager, adapter_name)
+    let (connection, _properties) = find_network_connection(connection_manager, adapter_name)
         .context("failed to get network connection")?
         .context("failed to find network connection")?;
 
