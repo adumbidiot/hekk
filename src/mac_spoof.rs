@@ -204,38 +204,53 @@ impl Adapter {
                 let hardware_address = if self.hardware_address.is_empty() {
                     None
                 } else {
-                    Some(self.hardware_address.as_str())
+                    Some(self.hardware_address.as_str().trim())
                 };
 
-                if let Err(e) = self
-                    .registry_adapter
-                    .set_hardware_address(hardware_address)
-                    .context("failed to set hardware address")
+                match hardware_address
+                    .as_deref()
+                    .map(validate_hardware_address)
+                    .unwrap_or(Ok(()))
                 {
-                    // TODO: Give user visual feedback. Modal?
-                    error!("{:?}", e);
+                    Ok(()) => {
+                        if let Err(e) = self
+                            .registry_adapter
+                            .set_hardware_address(hardware_address)
+                            .context("failed to set hardware address")
+                        {
+                            // TODO: Give user visual feedback. Modal?
+                            error!("{:?}", e);
 
-                    Command::none()
-                } else {
-                    info!(
-                        "Set Hardware Address to {}",
-                        hardware_address.unwrap_or("not set")
-                    );
-
-                    match self.registry_adapter.get_name() {
-                        Ok(name) => {
-                            self.is_resetting = true;
-
-                            let com_thread = com_thread.clone();
-                            Command::perform(
-                                async move { com_thread.reset_network_connection(name).await },
-                                move |result| AdapterMessage::DoneResetting(Arc::new(result)),
-                            )
-                        }
-                        Err(e) => {
-                            error!("Failed to get adapter name: {}", e);
                             Command::none()
+                        } else {
+                            info!(
+                                "Set Hardware Address to {}",
+                                hardware_address.unwrap_or("not set")
+                            );
+
+                            match self.registry_adapter.get_name() {
+                                Ok(name) => {
+                                    self.is_resetting = true;
+
+                                    let com_thread = com_thread.clone();
+                                    Command::perform(
+                                        async move { com_thread.reset_network_connection(name).await },
+                                        move |result| {
+                                            AdapterMessage::DoneResetting(Arc::new(result))
+                                        },
+                                    )
+                                }
+                                Err(e) => {
+                                    error!("Failed to get adapter name: {}", e);
+                                    Command::none()
+                                }
+                            }
                         }
+                    }
+                    Err(e) => {
+                        // TODO: Give user visual feedback
+                        error!("Invalid MAC Address: {}", e);
+                        Command::none()
                     }
                 }
             }
@@ -297,4 +312,27 @@ impl Adapter {
 
         column.into()
     }
+}
+
+/// Validates a mac address so that it is in the form XX-XX-XX-XX-XX-XX where X is a capital alphanumeric between A and F.
+fn validate_hardware_address(hardware_address: &str) -> anyhow::Result<()> {
+    let mut iter = hardware_address.chars();
+
+    for i in 0..6 {
+        for _ in 0..2 {
+            let c = iter.next().context("address too short")?;
+            if !('A'..='F').contains(&c) && !('a'..='f').contains(&c) {
+                anyhow::bail!("invalid char '{}'", c);
+            }
+        }
+
+        if i != 5 {
+            let c = iter.next().context("missing `-`")?;
+            if c != '-' {
+                anyhow::bail!("expected '-', got '{}'", c);
+            }
+        }
+    }
+
+    Ok(())
 }

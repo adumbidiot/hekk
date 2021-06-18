@@ -44,6 +44,8 @@ impl RegistryAdapter {
 
     /// Set the hardware address.
     /// Pass `None` to delete the registry key and reset the hardware address to its default.
+    /// Hardware addresses can be XX-XX-XX-XX-XX-XX or xx-xx-xx-xx-xx-xx where X is a capital alphanumeric
+    /// between A and F and x is a lowercase alphanumeric between a and f.
     pub fn set_hardware_address(&self, hardware_address: Option<&str>) -> std::io::Result<()> {
         match hardware_address {
             Some(hardware_address) => self.key.set_value(Self::HW_ADDRESS_KEY, &hardware_address),
