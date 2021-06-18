@@ -9,10 +9,7 @@ targets = [
 vulnerability = "deny"
 unmaintained = "deny"
 notice = "deny"
-ignore = [
-    # Dammit winit
-    "RUSTSEC-2020-0016",
-]
+ignore = []
 
 [licenses]
 unlicensed = "deny"
@@ -29,7 +26,6 @@ multiple-versions = "deny"
 highlight = "all"
 skip = [
     # Dammit winit
-    { name = "winapi", version = "0.2.8" },
     { name = "core-graphics", version = "0.19.2" },
     { name = "core-foundation-sys", version = "0.7.0" },
     { name = "core-foundation", version = "0.7.0" },
@@ -40,12 +36,6 @@ skip = [
     { name = "owned_ttf_parser", version = "0.6.0" },
     { name = "nix", version = "0.18.0" },
     { name = "libloading", version = "0.6.7" },
-    
-    # Blocked on twox-hash updating rand
-    { name = "rand_core", version = "0.5.1" },
-    { name = "rand_chacha", version = "0.2.2" },
-    { name = "rand", version = "0.7.3" },
-    { name = "getrandom", version = "0.1.16" },
     { name = "dlib", version = "0.4.2" },
 ]
 
@@ -81,7 +71,8 @@ allow-git = [
     "https://github.com/gfx-rs/gfx",
     "https://github.com/gfx-rs/naga",
     "https://github.com/adumbidiot/iphlpapi-rs",
-    "https://github.com/hecrj/iced",
+    # "https://github.com/hecrj/iced",
     "https://github.com/iced-rs/iced_aw",
-    "https://github.com/adumbidiot/skylight-rs"
+    "https://github.com/adumbidiot/skylight-rs",
+    "https://github.com/Imberflur/iced",
 ]
