@@ -2,6 +2,7 @@ mod adapters_info;
 mod com_thread;
 mod console;
 mod mac_spoof;
+mod registry_adapter;
 mod settings;
 mod style;
 

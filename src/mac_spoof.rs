@@ -1,7 +1,5 @@
-mod registry_adapter;
-
-use self::registry_adapter::RegistryAdapter;
 use crate::{
+    registry_adapter::RegistryAdapter,
     style::{
         ForegroundGreenTextInputStyle,
         GreyStyle,

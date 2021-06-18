@@ -8,22 +8,28 @@ use winreg::{
     RegKey,
 };
 
+/// A Registry Adapter
 #[derive(Debug)]
 pub struct RegistryAdapter {
     key: RegKey,
 }
 
 impl RegistryAdapter {
+    pub const REGISTRY_ADAPTER_KEY_STR: &'static str =
+        "SYSTEM\\CurrentControlSet\\Control\\Class\\{4D36E972-E325-11CE-BFC1-08002bE10318}";
     pub const HW_ADDRESS_KEY: &'static str = "NetworkAddress";
 
+    /// Make a registry adapter from a key.
     pub fn from_key(key: RegKey) -> Self {
         RegistryAdapter { key }
     }
 
+    /// Get the human readable name of this adapter
     pub fn get_description(&self) -> std::io::Result<String> {
         self.key.get_value("DriverDesc")
     }
 
+    /// Get the name of the adapter. This is a guid.
     pub fn get_name(&self) -> std::io::Result<String> {
         self.key.get_value("NetCfgInstanceId")
     }
@@ -43,9 +49,11 @@ impl RegistryAdapter {
     }
 
     /// Set the hardware address.
+    ///
     /// Pass `None` to delete the registry key and reset the hardware address to its default.
     /// Hardware addresses can be XX-XX-XX-XX-XX-XX or xx-xx-xx-xx-xx-xx where X is a capital alphanumeric
     /// between A and F and x is a lowercase alphanumeric between a and f.
+    /// This can also accept addresses in the form xxxxxxxxxxxx or XXXXXXXXXXXX.
     pub fn set_hardware_address(&self, hardware_address: Option<&str>) -> std::io::Result<()> {
         match hardware_address {
             Some(hardware_address) => self.key.set_value(Self::HW_ADDRESS_KEY, &hardware_address),
@@ -53,15 +61,14 @@ impl RegistryAdapter {
         }
     }
 
+    /// Get the list of registry adapters in this system.
+    ///
     /// This will try to get a read-only view of the adpater list, but writable adpaters.
     /// You need admin access for this to work properly.
     pub fn get_all() -> std::io::Result<Vec<std::io::Result<RegistryAdapter>>> {
-        pub const REGISTRY_ADAPTER_KEY_STR: &str =
-            "SYSTEM\\CurrentControlSet\\Control\\Class\\{4D36E972-E325-11CE-BFC1-08002bE10318}";
-
         let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
         let main_key =
-            hklm.open_subkey_with_flags(REGISTRY_ADAPTER_KEY_STR, KEY_ENUMERATE_SUB_KEYS)?;
+            hklm.open_subkey_with_flags(Self::REGISTRY_ADAPTER_KEY_STR, KEY_ENUMERATE_SUB_KEYS)?;
         let iter = main_key.enum_keys();
         let keys = iter
             .filter_map(|key| match key {
