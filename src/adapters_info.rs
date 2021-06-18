@@ -1,8 +1,11 @@
-use crate::style::{
-    ForegroundGreenButtonStyle,
-    ForegroundGreyContainerStyle,
-    GreyStyle,
-    GreyStyleCopyTextHack,
+use crate::{
+    format_mac_address_to_string,
+    style::{
+        ForegroundGreenButtonStyle,
+        ForegroundGreyContainerStyle,
+        GreyStyle,
+        GreyStyleCopyTextHack,
+    },
 };
 use iced::{
     Align,
@@ -123,24 +126,6 @@ impl Default for AdaptersInfo {
     }
 }
 
-fn format_address_to_string(address: &[u8]) -> String {
-    let mut ret = String::new();
-    format_address(&mut ret, address).expect("failed to format hardware address");
-    ret
-}
-
-fn format_address(mut f: impl std::fmt::Write, data: &[u8]) -> std::fmt::Result {
-    for (i, b) in data.iter().enumerate() {
-        if i == data.len() - 1 {
-            write!(f, "{:02X}", b)?;
-        } else {
-            write!(f, "{:02X}-", b)?;
-        }
-    }
-    writeln!(f)?;
-    Ok(())
-}
-
 fn ip_address_list_view(ip_address_state_vec: &mut [IpAddress]) -> iced::Element<Message> {
     let mut column = Column::new();
 
@@ -201,7 +186,7 @@ impl AdapterState {
 
             hardware_address: format!(
                 "Hardware Address: {}",
-                format_address_to_string(adapter.get_address())
+                format_mac_address_to_string(adapter.get_address())
             ),
             hardware_address_state: iced::text_input::State::new(),
 
