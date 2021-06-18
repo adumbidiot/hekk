@@ -3,6 +3,7 @@ mod com_thread;
 mod console;
 mod logger;
 mod mac_spoof;
+mod registry_adapter;
 mod settings;
 mod style;
 

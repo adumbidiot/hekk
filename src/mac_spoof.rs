@@ -1,4 +1,5 @@
 use crate::{
+    registry_adapter::RegistryAdapter,
     style::{
         ForegroundGreenTextInputStyle,
         GreyStyle,
@@ -24,17 +25,8 @@ use log::{
     info,
 };
 use std::{
-    ffi::OsString,
     sync::Arc,
     time::Instant,
-};
-use winreg::{
-    enums::{
-        HKEY_LOCAL_MACHINE,
-        KEY_ALL_ACCESS,
-        KEY_ENUMERATE_SUB_KEYS,
-    },
-    RegKey,
 };
 
 #[derive(Debug, Clone)]
@@ -65,7 +57,7 @@ impl MacSpoof {
 
     pub fn refresh_adapters(&mut self) {
         let start = Instant::now();
-        self.registry_adapters = get_registry_adapters().map(|registry_adapters| {
+        self.registry_adapters = RegistryAdapter::get_all().map(|registry_adapters| {
             registry_adapters
                 .into_iter()
                 .map(|adapter| adapter.map(Adapter::new))
@@ -210,38 +202,53 @@ impl Adapter {
                 let hardware_address = if self.hardware_address.is_empty() {
                     None
                 } else {
-                    Some(self.hardware_address.as_str())
+                    Some(self.hardware_address.as_str().trim())
                 };
 
-                if let Err(e) = self
-                    .registry_adapter
-                    .set_hardware_address(hardware_address)
-                    .context("failed to set hardware address")
+                match hardware_address
+                    .as_deref()
+                    .map(validate_hardware_address)
+                    .unwrap_or(Ok(()))
                 {
-                    // TODO: Give user visual feedback. Modal?
-                    error!("{:?}", e);
+                    Ok(()) => {
+                        if let Err(e) = self
+                            .registry_adapter
+                            .set_hardware_address(hardware_address)
+                            .context("failed to set hardware address")
+                        {
+                            // TODO: Give user visual feedback. Modal?
+                            error!("{:?}", e);
 
-                    Command::none()
-                } else {
-                    info!(
-                        "Set Hardware Address to {}",
-                        hardware_address.unwrap_or("not set")
-                    );
-
-                    match self.registry_adapter.get_name() {
-                        Ok(name) => {
-                            self.is_resetting = true;
-
-                            let com_thread = com_thread.clone();
-                            Command::perform(
-                                async move { com_thread.reset_network_connection(name).await },
-                                move |result| AdapterMessage::DoneResetting(Arc::new(result)),
-                            )
-                        }
-                        Err(e) => {
-                            error!("Failed to get adapter name: {}", e);
                             Command::none()
+                        } else {
+                            info!(
+                                "Set Hardware Address to {}",
+                                hardware_address.unwrap_or("not set")
+                            );
+
+                            match self.registry_adapter.get_name() {
+                                Ok(name) => {
+                                    self.is_resetting = true;
+
+                                    let com_thread = com_thread.clone();
+                                    Command::perform(
+                                        async move { com_thread.reset_network_connection(name).await },
+                                        move |result| {
+                                            AdapterMessage::DoneResetting(Arc::new(result))
+                                        },
+                                    )
+                                }
+                                Err(e) => {
+                                    error!("Failed to get adapter name: {}", e);
+                                    Command::none()
+                                }
+                            }
                         }
+                    }
+                    Err(e) => {
+                        // TODO: Give user visual feedback
+                        error!("Invalid MAC Address: {}", e);
+                        Command::none()
                     }
                 }
             }
@@ -305,77 +312,25 @@ impl Adapter {
     }
 }
 
-#[derive(Debug)]
-pub struct RegistryAdapter {
-    key: RegKey,
-}
+/// Validates a mac address so that it is in the form XX-XX-XX-XX-XX-XX where X is a capital alphanumeric between A and F.
+fn validate_hardware_address(hardware_address: &str) -> anyhow::Result<()> {
+    let mut iter = hardware_address.chars();
 
-impl RegistryAdapter {
-    pub const HW_ADDRESS_KEY: &'static str = "NetworkAddress";
+    for i in 0..6 {
+        for _ in 0..2 {
+            let c = iter.next().context("address too short")?;
+            if !('A'..='F').contains(&c) && !('a'..='f').contains(&c) {
+                anyhow::bail!("invalid char '{}'", c);
+            }
+        }
 
-    pub fn from_key(key: RegKey) -> Self {
-        RegistryAdapter { key }
-    }
-
-    pub fn get_description(&self) -> std::io::Result<String> {
-        self.key.get_value("DriverDesc")
-    }
-
-    pub fn get_name(&self) -> std::io::Result<String> {
-        self.key.get_value("NetCfgInstanceId")
-    }
-
-    /// Returns `None` if the hardware address does not exist.
-    pub fn get_hardware_address(&self) -> std::io::Result<Option<OsString>> {
-        match self.key.get_value(Self::HW_ADDRESS_KEY) {
-            Ok(addr) => Ok(Some(addr)),
-            Err(e) => {
-                if e.kind() == std::io::ErrorKind::NotFound {
-                    Ok(None)
-                } else {
-                    Err(e)
-                }
+        if i != 5 {
+            let c = iter.next().context("missing `-`")?;
+            if c != '-' {
+                anyhow::bail!("expected '-', got '{}'", c);
             }
         }
     }
 
-    /// Set the hardware address.
-    /// Pass `None` to delete the registry key and reset the hardware address to its default.
-    pub fn set_hardware_address(&self, hardware_address: Option<&str>) -> std::io::Result<()> {
-        match hardware_address {
-            Some(hardware_address) => self.key.set_value(Self::HW_ADDRESS_KEY, &hardware_address),
-            None => self.key.delete_value(Self::HW_ADDRESS_KEY),
-        }
-    }
-}
-
-/// This will try to get a read-only view of the adpater list, but writable adpaters.
-/// You need admin access for this to work properly.
-pub fn get_registry_adapters() -> std::io::Result<Vec<std::io::Result<RegistryAdapter>>> {
-    pub const REGISTRY_ADAPTER_KEY_STR: &str =
-        "SYSTEM\\CurrentControlSet\\Control\\Class\\{4D36E972-E325-11CE-BFC1-08002bE10318}";
-
-    let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
-    let main_key = hklm.open_subkey_with_flags(REGISTRY_ADAPTER_KEY_STR, KEY_ENUMERATE_SUB_KEYS)?;
-    let iter = main_key.enum_keys();
-    let keys = iter
-        .filter_map(|key| match key {
-            Ok(key) => {
-                // According to windows docs, adapter's registry key names are always 4 bytes in the form "xxxx".
-                if key.len() != 4 {
-                    None
-                } else {
-                    Some(Ok(key))
-                }
-            }
-            Err(e) => Some(Err(e)),
-        })
-        .map(|key_str| {
-            main_key
-                .open_subkey_with_flags(&key_str?, KEY_ALL_ACCESS)
-                .map(RegistryAdapter::from_key)
-        })
-        .collect();
-
-    Ok(keys)
+    Ok(())
 }
