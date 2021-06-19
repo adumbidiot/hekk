@@ -4,6 +4,7 @@ mod console;
 mod logger;
 mod mac_spoof;
 mod registry_adapter;
+mod resolve_arp;
 mod settings;
 mod style;
 
@@ -17,6 +18,7 @@ use crate::{
     adapters_info::AdaptersInfo,
     com_thread::ComThread,
     mac_spoof::MacSpoof,
+    resolve_arp::ResolveArp,
     style::GreyStyle,
 };
 use anyhow::Context;
@@ -36,6 +38,7 @@ pub enum Message {
 
     AdaptersInfo(crate::adapters_info::Message),
     MacSpoof(crate::mac_spoof::Message),
+    ResolveArp(crate::resolve_arp::Message),
     Settings(crate::settings::Message),
 
     Nop,
@@ -44,8 +47,9 @@ pub enum Message {
 pub struct App {
     active_tab: usize,
 
-    adapters_info: AdaptersInfo,
-    mac_spoof: MacSpoof,
+    adapters_info: crate::adapters_info::AdaptersInfo,
+    mac_spoof: crate::mac_spoof::MacSpoof,
+    resolve_arp: crate::resolve_arp::ResolveArp,
     settings: crate::settings::Settings,
 }
 
@@ -62,6 +66,7 @@ impl Application for App {
 
         let adapters_info = AdaptersInfo::new();
         let mac_spoof = MacSpoof::new(com_thread);
+        let resolve_arp = ResolveArp::new();
         let settings = crate::settings::Settings::new();
 
         (
@@ -70,6 +75,7 @@ impl Application for App {
 
                 adapters_info,
                 mac_spoof,
+                resolve_arp,
                 settings,
             },
             Command::none(),
@@ -91,6 +97,10 @@ impl Application for App {
                 .update(msg, clipboard)
                 .map(Message::AdaptersInfo),
             Message::MacSpoof(msg) => self.mac_spoof.update(msg, clipboard).map(Message::MacSpoof),
+            Message::ResolveArp(msg) => self
+                .resolve_arp
+                .update(msg, clipboard)
+                .map(Message::ResolveArp),
             Message::Settings(msg) => self.settings.update(msg, clipboard).map(Message::Settings),
             Message::Nop => Command::none(),
         }
@@ -107,6 +117,10 @@ impl Application for App {
                 self.mac_spoof.view().map(Message::MacSpoof),
             )
             .push(
+                TabLabel::Text("Resolve ARP".to_string()),
+                self.resolve_arp.view().map(Message::ResolveArp),
+            )
+            .push(
                 TabLabel::Text("Settings".to_string()),
                 self.settings.view().map(Message::Settings),
             )
@@ -117,6 +131,24 @@ impl Application for App {
             .tab_bar_position(iced_aw::TabBarPosition::Top)
             .into()
     }
+}
+
+fn format_mac_address(mut f: impl std::fmt::Write, data: &[u8]) -> std::fmt::Result {
+    for (i, b) in data.iter().enumerate() {
+        if i == data.len() - 1 {
+            write!(f, "{:02X}", b)?;
+        } else {
+            write!(f, "{:02X}-", b)?;
+        }
+    }
+    writeln!(f)?;
+    Ok(())
+}
+
+fn format_mac_address_to_string(address: &[u8]) -> String {
+    let mut ret = String::with_capacity(address.len() * 2);
+    format_mac_address(&mut ret, address).expect("failed to format hardware address");
+    ret
 }
 
 fn main() -> anyhow::Result<()> {
