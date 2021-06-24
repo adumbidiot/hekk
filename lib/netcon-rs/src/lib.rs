@@ -55,6 +55,7 @@ use std::{
         TryInto,
     },
     fmt::Debug,
+    ptr::NonNull,
     string::FromUtf16Error,
 };
 use winapi::{
@@ -81,7 +82,7 @@ use winapi::{
 
 /// A Manager for network connections
 #[repr(transparent)]
-pub struct NetConnectionManager(*mut INetConnectionManager);
+pub struct NetConnectionManager(NonNull<INetConnectionManager>);
 
 impl NetConnectionManager {
     /// Make a new [`NetConnectionManager`].
@@ -94,24 +95,26 @@ impl NetConnectionManager {
             .map_err(std::io::Error::from_raw_os_error)?
         };
 
-        Ok(NetConnectionManager(ptr))
+        Ok(NetConnectionManager(
+            NonNull::new(ptr).expect("ptr was null"),
+        ))
     }
 
     /// Iterate over [`NetConnection`]s.
     pub fn iter(&self) -> std::io::Result<EnumNetConnection> {
         let mut ptr = std::ptr::null_mut();
-        let code = unsafe { (&*self.0).EnumConnections(NCME_DEFAULT, &mut ptr) };
+        let code = unsafe { self.0.as_ref().EnumConnections(NCME_DEFAULT, &mut ptr) };
         if FAILED(code) {
             return Err(std::io::Error::from_raw_os_error(code));
         }
 
-        Ok(EnumNetConnection(ptr))
+        Ok(EnumNetConnection(NonNull::new(ptr).expect("ptr is null")))
     }
 }
 
 /// An enumerator over [`NetConnection`]s.
 #[repr(transparent)]
-pub struct EnumNetConnection(*mut IEnumNetConnection);
+pub struct EnumNetConnection(NonNull<IEnumNetConnection>);
 
 impl EnumNetConnection {
     // TODO: Allow the user to generically specify how many items they want instead of only retrieving one at a time.
@@ -119,12 +122,12 @@ impl EnumNetConnection {
     pub fn next_connection(&self) -> std::io::Result<Option<NetConnection>> {
         let mut ptr = std::ptr::null_mut();
         let mut num_recieved = 0;
-        let ret = unsafe { (&*self.0).Next(1, &mut ptr, &mut num_recieved) };
+        let ret = unsafe { self.0.as_ref().Next(1, &mut ptr, &mut num_recieved) };
 
         // Enumerators return S_FALSE to signal that there are no items left.
         match (ret, num_recieved) {
             (S_OK, 0) => Ok(None), // no items returned, yet successful. Assume no more items.
-            (S_OK, _) => Ok(Some(NetConnection(ptr.cast()))),
+            (S_OK, _) => Ok(Some(NetConnection(NonNull::new(ptr).expect("ptr is null")))),
             (S_FALSE, _) => Ok(None), // the enumerator has signaled that it is done. num_recieved should be 0.
             _ => Err(std::io::Error::from_raw_os_error(ret)), // An error occured.
         }
@@ -132,7 +135,7 @@ impl EnumNetConnection {
 
     /// Skip connections
     pub fn skip_connection(&self, n: u32) -> std::io::Result<()> {
-        let code = unsafe { (&*self.0).Skip(n) };
+        let code = unsafe { self.0.as_ref().Skip(n) };
         if FAILED(code) {
             return Err(std::io::Error::from_raw_os_error(code));
         }
@@ -141,7 +144,7 @@ impl EnumNetConnection {
 
     /// Reset this object
     pub fn reset(&self) -> std::io::Result<()> {
-        let code = unsafe { (&*self.0).Reset() };
+        let code = unsafe { self.0.as_ref().Reset() };
         if FAILED(code) {
             return Err(std::io::Error::from_raw_os_error(code));
         }
@@ -159,33 +162,33 @@ impl Iterator for EnumNetConnection {
 
 /// A network connection
 #[repr(transparent)]
-pub struct NetConnection(*mut INetConnection);
+pub struct NetConnection(NonNull<INetConnection>);
 
 impl NetConnection {
     /// Get the properties for this connection.
     pub fn get_properties(&self) -> Result<NetConProperties, std::io::Error> {
         let mut ptr = std::ptr::null_mut();
-        let code = unsafe { (&*self.0).GetProperties(&mut ptr) };
+        let code = unsafe { self.0.as_ref().GetProperties(&mut ptr) };
 
         if FAILED(code) {
             return Err(std::io::Error::from_raw_os_error(code));
         }
 
-        Ok(NetConProperties(ptr))
+        Ok(NetConProperties(NonNull::new(ptr).expect("ptr is null")))
     }
 
-    /// Connect a connection
+    /// Connect a connection.
     pub fn connect(&self) -> std::io::Result<()> {
-        let code = unsafe { (&*self.0).Connect() };
+        let code = unsafe { self.0.as_ref().Connect() };
         if FAILED(code) {
             return Err(std::io::Error::from_raw_os_error(code));
         }
         Ok(())
     }
 
-    /// Disconnect a connection
+    /// Disconnect a connection.
     pub fn disconnect(&self) -> std::io::Result<()> {
-        let code = unsafe { (&*self.0).Disconnect() };
+        let code = unsafe { self.0.as_ref().Disconnect() };
         if FAILED(code) {
             return Err(std::io::Error::from_raw_os_error(code));
         }
@@ -203,12 +206,12 @@ impl std::fmt::Debug for NetConnection {
 
 /// Network Connection Properties
 #[repr(transparent)]
-pub struct NetConProperties(*mut NETCON_PROPERTIES);
+pub struct NetConProperties(NonNull<NETCON_PROPERTIES>);
 
 impl NetConProperties {
-    /// Get the GUID
+    /// Get the GUID.
     pub fn guid(&self) -> &GUID {
-        unsafe { &(*self.0).guidId }
+        unsafe { &self.0.as_ref().guidId }
     }
 
     /// Get the raw name.
@@ -217,7 +220,7 @@ impl NetConProperties {
     /// Panics if the length is greater that a `usize`.
     pub fn raw_name(&self) -> &[u16] {
         unsafe {
-            let ptr = (*self.0).pszwName;
+            let ptr = self.0.as_ref().pszwName;
             let len = lstrlenW(ptr).try_into().expect("len cannot fit in a usize");
             std::slice::from_raw_parts(ptr, len)
         }
@@ -234,7 +237,7 @@ impl NetConProperties {
     /// Panics if the length is greater that a `usize`.
     pub fn raw_device_name(&self) -> &[u16] {
         unsafe {
-            let ptr = (*self.0).pszwDeviceName;
+            let ptr = self.0.as_ref().pszwDeviceName;
             let len = lstrlenW(ptr).try_into().expect("len cannot fit in a usize");
             std::slice::from_raw_parts(ptr, len)
         }
@@ -247,7 +250,7 @@ impl NetConProperties {
 
     /// Get the raw connection status
     pub fn raw_status(&self) -> u32 {
-        unsafe { (*self.0).Status }
+        unsafe { self.0.as_ref().Status }
     }
 
     /// Get the connection status
@@ -257,7 +260,7 @@ impl NetConProperties {
 
     /// Get the raw media type for this connection
     pub fn raw_media_type(&self) -> u32 {
-        unsafe { (*self.0).MediaType }
+        unsafe { self.0.as_ref().MediaType }
     }
 
     /// Get the media_type of this connection
@@ -267,7 +270,7 @@ impl NetConProperties {
 
     /// Get the raw connection characteristics
     pub fn raw_characteristics(&self) -> u32 {
-        unsafe { (*self.0).dwCharacter }
+        unsafe { self.0.as_ref().dwCharacter }
     }
 
     /// Get the connection characteristics
@@ -277,12 +280,12 @@ impl NetConProperties {
 
     /// Get the clsid for this object
     pub fn clsid_this_object(&self) -> &CLSID {
-        unsafe { &(*self.0).clsidThisObject }
+        unsafe { &self.0.as_ref().clsidThisObject }
     }
 
     /// Get the clsid for the ui object
     pub fn clsid_ui_object(&self) -> &CLSID {
-        unsafe { &(*self.0).clsidUiObject }
+        unsafe { &self.0.as_ref().clsidUiObject }
     }
 }
 
@@ -304,9 +307,9 @@ impl std::fmt::Debug for NetConProperties {
 impl Drop for NetConProperties {
     fn drop(&mut self) {
         unsafe {
-            CoTaskMemFree((*self.0).pszwName.cast());
-            CoTaskMemFree((*self.0).pszwDeviceName.cast());
-            CoTaskMemFree(self.0.cast());
+            CoTaskMemFree(self.0.as_ref().pszwName.cast());
+            CoTaskMemFree(self.0.as_ref().pszwDeviceName.cast());
+            CoTaskMemFree(self.0.as_ptr().cast());
         }
     }
 }
