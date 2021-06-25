@@ -25,11 +25,11 @@ winres = "0.1.11"
 
 [patch.crates-io]
 # Get wgpu 0.9.x + update winit
-iced = { git = "https://github.com/hecrj/iced", rev = "d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a" }
-iced_futures = { git = "https://github.com/hecrj/iced", rev = "d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a" }
-iced_native = { git = "https://github.com/hecrj/iced", rev = "d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a" }
-iced_graphics = { git = "https://github.com/hecrj/iced", rev = "d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a" }
-iced_style = { git = "https://github.com/hecrj/iced", rev = "d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a" }
+iced = { git = "https://github.com/hecrj/iced", rev = "06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f" }
+iced_futures = { git = "https://github.com/hecrj/iced", rev = "06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f" }
+iced_native = { git = "https://github.com/hecrj/iced", rev = "06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f" }
+iced_graphics = { git = "https://github.com/hecrj/iced", rev = "06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f" }
+iced_style = { git = "https://github.com/hecrj/iced", rev = "06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f" }
 
 [profile.release]
 codegen-units = 1

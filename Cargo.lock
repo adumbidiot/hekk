@@ -1161,11 +1161,11 @@ dependencies = [
 [[package]]
 name = "iced"
 version = "0.3.0"
-source = "git+https://github.com/hecrj/iced?rev=d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a#d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a"
+source = "git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f#06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f"
 dependencies = [
- "iced_core 0.4.0 (git+https://github.com/hecrj/iced?rev=d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a)",
+ "iced_core 0.4.0 (git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f)",
  "iced_futures",
- "iced_web 0.4.0 (git+https://github.com/hecrj/iced?rev=d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a)",
+ "iced_web 0.4.0 (git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f)",
  "iced_wgpu",
  "iced_winit",
  "thiserror",
@@ -1194,12 +1194,12 @@ checksum = "fafe4a5eeee85876f3bad347338456e0f3e7fcdc2381a5ce6c3ba2a60dd769bf"
 [[package]]
 name = "iced_core"
 version = "0.4.0"
-source = "git+https://github.com/hecrj/iced?rev=d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a#d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a"
+source = "git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f#06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f"
 
 [[package]]
 name = "iced_futures"
 version = "0.3.0"
-source = "git+https://github.com/hecrj/iced?rev=d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a#d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a"
+source = "git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f#06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f"
 dependencies = [
  "futures",
  "log",
@@ -1210,7 +1210,7 @@ dependencies = [
 [[package]]
 name = "iced_graphics"
 version = "0.2.0"
-source = "git+https://github.com/hecrj/iced?rev=d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a#d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a"
+source = "git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f#06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f"
 dependencies = [
  "bytemuck",
  "font-kit",
@@ -1224,9 +1224,9 @@ dependencies = [
 [[package]]
 name = "iced_native"
 version = "0.4.0"
-source = "git+https://github.com/hecrj/iced?rev=d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a#d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a"
+source = "git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f#06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f"
 dependencies = [
- "iced_core 0.4.0 (git+https://github.com/hecrj/iced?rev=d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a)",
+ "iced_core 0.4.0 (git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f)",
  "iced_futures",
  "num-traits",
  "twox-hash",
@@ -1236,9 +1236,9 @@ dependencies = [
 [[package]]
 name = "iced_style"
 version = "0.3.0"
-source = "git+https://github.com/hecrj/iced?rev=d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a#d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a"
+source = "git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f#06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f"
 dependencies = [
- "iced_core 0.4.0 (git+https://github.com/hecrj/iced?rev=d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a)",
+ "iced_core 0.4.0 (git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f)",
 ]
 
 [[package]]
@@ -1261,10 +1261,10 @@ dependencies = [
 [[package]]
 name = "iced_web"
 version = "0.4.0"
-source = "git+https://github.com/hecrj/iced?rev=d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a#d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a"
+source = "git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f#06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f"
 dependencies = [
  "dodrio",
- "iced_core 0.4.0 (git+https://github.com/hecrj/iced?rev=d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a)",
+ "iced_core 0.4.0 (git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f)",
  "iced_futures",
  "iced_style",
  "num-traits",
@@ -1277,7 +1277,7 @@ dependencies = [
 [[package]]
 name = "iced_wgpu"
 version = "0.4.0"
-source = "git+https://github.com/hecrj/iced?rev=d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a#d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a"
+source = "git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f#06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f"
 dependencies = [
  "bytemuck",
  "futures",
@@ -1294,7 +1294,7 @@ dependencies = [
 [[package]]
 name = "iced_winit"
 version = "0.3.0"
-source = "git+https://github.com/hecrj/iced?rev=d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a#d2c8a3e04b02a1fcf54504bcbd41c488a8bba88a"
+source = "git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f#06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f"
 dependencies = [
  "iced_futures",
  "iced_graphics",
@@ -1346,6 +1346,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "61124eeebbd69b8190558df225adf7e4caafce0d743919e5d6b19652314ec5ec"
 dependencies = [
  "cfg-if 1.0.0",
+ "js-sys",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]
@@ -2738,8 +2741,7 @@ dependencies = [
 [[package]]
 name = "winit"
 version = "0.25.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "79610794594d5e86be473ef7763f604f2159cbac8c94debd00df8fb41e86c2f8"
+source = "git+https://github.com/iced-rs/winit?rev=9c358959ed99736566d50a511b03d2fed3aac2ae#9c358959ed99736566d50a511b03d2fed3aac2ae"
 dependencies = [
  "bitflags",
  "cocoa",
@@ -2760,9 +2762,10 @@ dependencies = [
  "parking_lot",
  "percent-encoding",
  "raw-window-handle",
- "scopeguard",
  "smithay-client-toolkit 0.12.3",
+ "wasm-bindgen",
  "wayland-client",
+ "web-sys",
  "winapi",
  "x11-dl",
 ]
