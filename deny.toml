@@ -30,6 +30,8 @@ skip = [
     { name = "core-foundation-sys", version = "0.7.0" },
     { name = "core-foundation", version = "0.7.0" },
     { name = "cfg-if", version = "0.1.10" },
+    { name = "smithay-client-toolkit", version = "0.12.3" },
+    { name = "memmap2", version = "0.1.0" },
     
     # Blocked on updates to smithay-toolkit
     { name = "ttf-parser", version = "0.6.2" },
@@ -66,13 +68,9 @@ unknown-registry = "deny"
 unknown-git = "deny"
 allow-registry = [ "https://github.com/rust-lang/crates.io-index" ]
 allow-git = [
-    "https://github.com/gfx-rs/wgpu",
-    "https://github.com/gfx-rs/wgpu-rs",
-    "https://github.com/gfx-rs/gfx",
-    "https://github.com/gfx-rs/naga",
     "https://github.com/adumbidiot/iphlpapi-rs",
-    # "https://github.com/hecrj/iced",
+    "https://github.com/hecrj/iced",
     "https://github.com/iced-rs/iced_aw",
     "https://github.com/adumbidiot/skylight-rs",
-    "https://github.com/Imberflur/iced",
+    "https://github.com/iced-rs/winit",
 ]

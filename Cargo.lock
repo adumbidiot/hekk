@@ -559,6 +559,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 
 [[package]]
+name = "drm-fourcc"
+version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ebbf3a5ed4671aabffefce172ff43d69c1f27dd2c6aea28e5212a70f32ada0cf"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "dwrote"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -603,6 +612,16 @@ checksum = "658f19728920138342f68408b7cf7644d90d4784353d8ebc32e7e8663dbe45fa"
 dependencies = [
  "cmake",
  "pkg-config",
+]
+
+[[package]]
+name = "external-memory"
+version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e4dfe8d292b014422776a8c516862d2bff8a81b223a4461dfdc45f3862dc9d39"
+dependencies = [
+ "bitflags",
+ "drm-fourcc",
 ]
 
 [[package]]
@@ -832,8 +851,9 @@ dependencies = [
 
 [[package]]
 name = "gfx-auxil"
-version = "0.9.0"
-source = "git+https://github.com/gfx-rs/gfx?rev=27a1dae3796d33d23812f2bb8c7e3b5aea18b521#27a1dae3796d33d23812f2bb8c7e3b5aea18b521"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1694991b11d642680e82075a75c7c2bd75556b805efa7660b705689f05b1ab1c"
 dependencies = [
  "fxhash",
  "gfx-hal",
@@ -842,13 +862,15 @@ dependencies = [
 
 [[package]]
 name = "gfx-backend-dx11"
-version = "0.8.0"
-source = "git+https://github.com/gfx-rs/gfx?rev=27a1dae3796d33d23812f2bb8c7e3b5aea18b521#27a1dae3796d33d23812f2bb8c7e3b5aea18b521"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f9e453baf3aaef2b0c354ce0b3d63d76402e406a59b64b7182d123cfa6635ae"
 dependencies = [
  "arrayvec",
  "bitflags",
  "gfx-auxil",
  "gfx-hal",
+ "gfx-renderdoc",
  "libloading 0.7.0",
  "log",
  "parking_lot",
@@ -863,8 +885,9 @@ dependencies = [
 
 [[package]]
 name = "gfx-backend-dx12"
-version = "0.8.0"
-source = "git+https://github.com/gfx-rs/gfx?rev=27a1dae3796d33d23812f2bb8c7e3b5aea18b521#27a1dae3796d33d23812f2bb8c7e3b5aea18b521"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "61f09e9d8c2aa69e9a21eb83c0f5d1a286c6d37da011f796e550d180b08090ce"
 dependencies = [
  "arrayvec",
  "bit-set",
@@ -872,6 +895,7 @@ dependencies = [
  "d3d12",
  "gfx-auxil",
  "gfx-hal",
+ "gfx-renderdoc",
  "log",
  "parking_lot",
  "range-alloc",
@@ -884,8 +908,9 @@ dependencies = [
 
 [[package]]
 name = "gfx-backend-empty"
-version = "0.8.0"
-source = "git+https://github.com/gfx-rs/gfx?rev=27a1dae3796d33d23812f2bb8c7e3b5aea18b521#27a1dae3796d33d23812f2bb8c7e3b5aea18b521"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "29c8f813c47791918aa00dc9c9ddf961d23fa8c2a5d869e6cb8ea84f944820f4"
 dependencies = [
  "gfx-hal",
  "log",
@@ -894,8 +919,9 @@ dependencies = [
 
 [[package]]
 name = "gfx-backend-gl"
-version = "0.8.1"
-source = "git+https://github.com/gfx-rs/gfx?rev=27a1dae3796d33d23812f2bb8c7e3b5aea18b521#27a1dae3796d33d23812f2bb8c7e3b5aea18b521"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6bae057fc3a0ab23ecf97ae51d4017d27d5ddf0aab16ee6dcb58981af88c3152"
 dependencies = [
  "arrayvec",
  "bitflags",
@@ -915,14 +941,16 @@ dependencies = [
 
 [[package]]
 name = "gfx-backend-metal"
-version = "0.8.1"
-source = "git+https://github.com/gfx-rs/gfx?rev=27a1dae3796d33d23812f2bb8c7e3b5aea18b521#27a1dae3796d33d23812f2bb8c7e3b5aea18b521"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0de85808e2a98994c6af925253f8a9593bc57180ef1ea137deab6d35cc949517"
 dependencies = [
  "arrayvec",
  "bitflags",
  "block",
  "cocoa-foundation",
  "copyless",
+ "core-graphics-types",
  "foreign-types",
  "fxhash",
  "gfx-hal",
@@ -939,35 +967,48 @@ dependencies = [
 
 [[package]]
 name = "gfx-backend-vulkan"
-version = "0.8.0"
-source = "git+https://github.com/gfx-rs/gfx?rev=27a1dae3796d33d23812f2bb8c7e3b5aea18b521#27a1dae3796d33d23812f2bb8c7e3b5aea18b521"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a9861ec855acbbc65c0e4f966d761224886e811dc2c6d413a4776e9293d0e5c0"
 dependencies = [
  "arrayvec",
  "ash",
  "byteorder",
  "core-graphics-types",
  "gfx-hal",
+ "gfx-renderdoc",
  "inplace_it",
- "libloading 0.7.0",
  "log",
  "naga",
  "objc",
  "parking_lot",
  "raw-window-handle",
- "renderdoc-sys",
  "smallvec",
  "winapi",
 ]
 
 [[package]]
 name = "gfx-hal"
-version = "0.8.0"
-source = "git+https://github.com/gfx-rs/gfx?rev=27a1dae3796d33d23812f2bb8c7e3b5aea18b521#27a1dae3796d33d23812f2bb8c7e3b5aea18b521"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7fbb575ea793dd0507b3082f4f2cde62dc9f3cebd98f5cd49ba2a4da97a976fd"
 dependencies = [
  "bitflags",
+ "external-memory",
  "naga",
  "raw-window-handle",
  "thiserror",
+]
+
+[[package]]
+name = "gfx-renderdoc"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c8027995e247e2426d3a00d13f5191dd56c314bff02dc4b54cbf727f1ba9c40a"
+dependencies = [
+ "libloading 0.7.0",
+ "log",
+ "renderdoc-sys",
 ]
 
 [[package]]
@@ -1103,7 +1144,6 @@ dependencies = [
  "once_cell",
  "skylight",
  "tokio",
- "wgpu",
  "winapi",
  "winreg",
  "winres",
@@ -1111,9 +1151,9 @@ dependencies = [
 
 [[package]]
 name = "hermit-abi"
-version = "0.1.18"
+version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "322f4de77956e22ed0e5032c359a0f1273f1f7f0d79bfa3b8ffbc730d7fbcc5c"
+checksum = "62b467343b94ba476dcb2500d242dadbb39557df889310ac77c5d99100aaac33"
 dependencies = [
  "libc",
 ]
@@ -1121,11 +1161,11 @@ dependencies = [
 [[package]]
 name = "iced"
 version = "0.3.0"
-source = "git+https://github.com/Imberflur/iced?rev=18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb#18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb"
+source = "git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f#06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f"
 dependencies = [
- "iced_core 0.4.0 (git+https://github.com/Imberflur/iced?rev=18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb)",
+ "iced_core 0.4.0 (git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f)",
  "iced_futures",
- "iced_web 0.4.0 (git+https://github.com/Imberflur/iced?rev=18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb)",
+ "iced_web 0.4.0 (git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f)",
  "iced_wgpu",
  "iced_winit",
  "thiserror",
@@ -1154,12 +1194,12 @@ checksum = "fafe4a5eeee85876f3bad347338456e0f3e7fcdc2381a5ce6c3ba2a60dd769bf"
 [[package]]
 name = "iced_core"
 version = "0.4.0"
-source = "git+https://github.com/Imberflur/iced?rev=18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb#18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb"
+source = "git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f#06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f"
 
 [[package]]
 name = "iced_futures"
 version = "0.3.0"
-source = "git+https://github.com/Imberflur/iced?rev=18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb#18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb"
+source = "git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f#06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f"
 dependencies = [
  "futures",
  "log",
@@ -1170,7 +1210,7 @@ dependencies = [
 [[package]]
 name = "iced_graphics"
 version = "0.2.0"
-source = "git+https://github.com/Imberflur/iced?rev=18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb#18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb"
+source = "git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f#06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f"
 dependencies = [
  "bytemuck",
  "font-kit",
@@ -1184,9 +1224,9 @@ dependencies = [
 [[package]]
 name = "iced_native"
 version = "0.4.0"
-source = "git+https://github.com/Imberflur/iced?rev=18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb#18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb"
+source = "git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f#06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f"
 dependencies = [
- "iced_core 0.4.0 (git+https://github.com/Imberflur/iced?rev=18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb)",
+ "iced_core 0.4.0 (git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f)",
  "iced_futures",
  "num-traits",
  "twox-hash",
@@ -1196,9 +1236,9 @@ dependencies = [
 [[package]]
 name = "iced_style"
 version = "0.3.0"
-source = "git+https://github.com/Imberflur/iced?rev=18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb#18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb"
+source = "git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f#06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f"
 dependencies = [
- "iced_core 0.4.0 (git+https://github.com/Imberflur/iced?rev=18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb)",
+ "iced_core 0.4.0 (git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f)",
 ]
 
 [[package]]
@@ -1221,10 +1261,10 @@ dependencies = [
 [[package]]
 name = "iced_web"
 version = "0.4.0"
-source = "git+https://github.com/Imberflur/iced?rev=18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb#18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb"
+source = "git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f#06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f"
 dependencies = [
  "dodrio",
- "iced_core 0.4.0 (git+https://github.com/Imberflur/iced?rev=18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb)",
+ "iced_core 0.4.0 (git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f)",
  "iced_futures",
  "iced_style",
  "num-traits",
@@ -1237,7 +1277,7 @@ dependencies = [
 [[package]]
 name = "iced_wgpu"
 version = "0.4.0"
-source = "git+https://github.com/Imberflur/iced?rev=18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb#18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb"
+source = "git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f#06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f"
 dependencies = [
  "bytemuck",
  "futures",
@@ -1254,7 +1294,7 @@ dependencies = [
 [[package]]
 name = "iced_winit"
 version = "0.3.0"
-source = "git+https://github.com/Imberflur/iced?rev=18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb#18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb"
+source = "git+https://github.com/hecrj/iced?rev=06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f#06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f"
 dependencies = [
  "iced_futures",
  "iced_graphics",
@@ -1306,6 +1346,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "61124eeebbd69b8190558df225adf7e4caafce0d743919e5d6b19652314ec5ec"
 dependencies = [
  "cfg-if 1.0.0",
+ "js-sys",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]
@@ -1449,6 +1492,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "memmap2"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "723e3ebdcdc5c023db1df315364573789f8857c11b631a2fdfad7c00f5c046b4"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "memoffset"
 version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1459,13 +1511,13 @@ dependencies = [
 
 [[package]]
 name = "metal"
-version = "0.22.0"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c12e48c737ee9a55e8bb2352bcde588f79ae308d3529ee888f7cc0f469b5777"
+checksum = "79d7d769f1c104b8388294d6594d491d2e21240636f5f94d37f8a0f3d7904450"
 dependencies = [
  "bitflags",
  "block",
- "cocoa-foundation",
+ "core-graphics-types",
  "foreign-types",
  "log",
  "objc",
@@ -1507,8 +1559,9 @@ dependencies = [
 
 [[package]]
 name = "naga"
-version = "0.4.0"
-source = "git+https://github.com/gfx-rs/naga?tag=gfx-25#057d03ad86f18e3bb3866b20901d8d4e892dd3d6"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ef670817eef03d356d5a509ea275e7dd3a78ea9e24261ea3cb2dfed1abb08f64"
 dependencies = [
  "bit-set",
  "bitflags",
@@ -1865,9 +1918,9 @@ dependencies = [
 
 [[package]]
 name = "profiling"
-version = "1.0.2"
+version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a7c000c0ce9d9bb94c0fbacdf20e5087fbe652c556ffb2c9387d980e17d51fb"
+checksum = "87dfd5592a8eed7e74f56ad7b125f8234763b805c30f0c7c95c486920026a6ec"
 
 [[package]]
 name = "quote"
@@ -1922,7 +1975,8 @@ dependencies = [
 [[package]]
 name = "range-alloc"
 version = "0.1.2"
-source = "git+https://github.com/gfx-rs/gfx?rev=27a1dae3796d33d23812f2bb8c7e3b5aea18b521#27a1dae3796d33d23812f2bb8c7e3b5aea18b521"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "63e935c45e09cc6dcf00d2f0b2d630a58f4095320223d47fc68918722f0538b6"
 
 [[package]]
 name = "raw-window-handle"
@@ -2061,6 +2115,20 @@ name = "serde"
 version = "1.0.126"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec7505abeacaec74ae4778d9d9328fe5a5d04253220a85c4ee022239fc996d03"
+dependencies = [
+ "serde_derive",
+]
+
+[[package]]
+name = "serde_derive"
+version = "1.0.126"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "963a7dbc9895aeac7ac90e74f34a5d5261828f79df35cbed41e10189d3804d43"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "servo-fontconfig"
@@ -2122,7 +2190,7 @@ dependencies = [
  "dlib 0.4.2",
  "lazy_static",
  "log",
- "memmap2",
+ "memmap2 0.1.0",
  "nix 0.18.0",
  "wayland-client",
  "wayland-cursor",
@@ -2130,12 +2198,29 @@ dependencies = [
 ]
 
 [[package]]
-name = "smithay-clipboard"
-version = "0.6.3"
+name = "smithay-client-toolkit"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "06384dfaf645908220d976ae24ed39f6cf92efecb0225ea0a948e403014de527"
+checksum = "ec783683499a2cfc85b6df3d04f83b1907b5cbd98a1aed44667dbdf1eac4e64c"
 dependencies = [
- "smithay-client-toolkit",
+ "bitflags",
+ "dlib 0.5.0",
+ "lazy_static",
+ "log",
+ "memmap2 0.2.3",
+ "nix 0.20.0",
+ "wayland-client",
+ "wayland-cursor",
+ "wayland-protocols",
+]
+
+[[package]]
+name = "smithay-clipboard"
+version = "0.6.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "986c5b4a7bd4f50d4c51f81f844745535cb488360f9cf63293780b109b9295f3"
+dependencies = [
+ "smithay-client-toolkit 0.14.0",
  "wayland-client",
 ]
 
@@ -2531,8 +2616,9 @@ dependencies = [
 
 [[package]]
 name = "wgpu"
-version = "0.8.0"
-source = "git+https://github.com/gfx-rs/wgpu-rs?rev=3634abb0d560a2906d20c74efee9c2f16afb2503#3634abb0d560a2906d20c74efee9c2f16afb2503"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd247f8b26fd3d42ef2f320d378025cd6e84d782ef749fab45cc3b981fbe3275"
 dependencies = [
  "arrayvec",
  "js-sys",
@@ -2550,8 +2636,9 @@ dependencies = [
 
 [[package]]
 name = "wgpu-core"
-version = "0.8.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=7ce535cc97958d8e224247764f3d57c162594504#7ce535cc97958d8e224247764f3d57c162594504"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2af5c8acd3ae5781a277cdf65a17f3a7135de5ae782775620e74ea16c9d47770"
 dependencies = [
  "arrayvec",
  "bitflags",
@@ -2579,17 +2666,18 @@ dependencies = [
 
 [[package]]
 name = "wgpu-types"
-version = "0.8.0"
-source = "git+https://github.com/gfx-rs/wgpu?rev=7ce535cc97958d8e224247764f3d57c162594504#7ce535cc97958d8e224247764f3d57c162594504"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4f5c9678cd533558e28b416d66947b099742df1939307478db54f867137f1b60"
 dependencies = [
  "bitflags",
 ]
 
 [[package]]
 name = "wgpu_glyph"
-version = "0.12.0"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "634570b440f4c24c2e6049ed01ec832c23d338dea3eca654d5760838017a1c8b"
+checksum = "0fee8c96eda18195a7ad9989737183e0a357f14b15e98838c76abbcf56a5f970"
 dependencies = [
  "bytemuck",
  "glyph_brush",
@@ -2653,8 +2741,7 @@ dependencies = [
 [[package]]
 name = "winit"
 version = "0.25.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "79610794594d5e86be473ef7763f604f2159cbac8c94debd00df8fb41e86c2f8"
+source = "git+https://github.com/iced-rs/winit?rev=9c358959ed99736566d50a511b03d2fed3aac2ae#9c358959ed99736566d50a511b03d2fed3aac2ae"
 dependencies = [
  "bitflags",
  "cocoa",
@@ -2675,9 +2762,10 @@ dependencies = [
  "parking_lot",
  "percent-encoding",
  "raw-window-handle",
- "scopeguard",
- "smithay-client-toolkit",
+ "smithay-client-toolkit 0.12.3",
+ "wasm-bindgen",
  "wayland-client",
+ "web-sys",
  "winapi",
  "x11-dl",
 ]

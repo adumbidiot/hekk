@@ -20,29 +20,16 @@ tokio = { version = "1.7.1", features = [ "sync" ] }
 winapi = "0.3.9"
 winreg = "0.9.0"
 
-# Force use of wgpu that has needed fixes on master
-wgpu = "=0.8.0"
-
 [build-dependencies]
 winres = "0.1.11"
 
 [patch.crates-io]
-# Get latest wgpu
-# iced = { git = "https://github.com/hecrj/iced", rev = "e292821c3780fc5a57c835815efc7a232ce4dc32" }
-# iced_futures = { git = "https://github.com/hecrj/iced", rev = "e292821c3780fc5a57c835815efc7a232ce4dc32" }
-# iced_native = { git = "https://github.com/hecrj/iced", rev = "e292821c3780fc5a57c835815efc7a232ce4dc32" }
-# iced_graphics = { git = "https://github.com/hecrj/iced", rev = "e292821c3780fc5a57c835815efc7a232ce4dc32" }
-# iced_style = { git = "https://github.com/hecrj/iced", rev = "e292821c3780fc5a57c835815efc7a232ce4dc32" }
-
-# Get the latest wgpu + update winit
-iced = { git = "https://github.com/Imberflur/iced", rev = "18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb" }
-iced_futures = { git = "https://github.com/Imberflur/iced", rev = "18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb" }
-iced_native = { git = "https://github.com/Imberflur/iced", rev = "18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb" }
-iced_graphics = { git = "https://github.com/Imberflur/iced", rev = "18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb" }
-iced_style = { git = "https://github.com/Imberflur/iced", rev = "18a48a5eeefd2aa6e50f5dd0751ac2e94c88a9eb" }
-
-# Fix segfault on panic
-wgpu = { git = "https://github.com/gfx-rs/wgpu-rs" , rev = "3634abb0d560a2906d20c74efee9c2f16afb2503" }
+# Get wgpu 0.9.x + update winit
+iced = { git = "https://github.com/hecrj/iced", rev = "06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f" }
+iced_futures = { git = "https://github.com/hecrj/iced", rev = "06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f" }
+iced_native = { git = "https://github.com/hecrj/iced", rev = "06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f" }
+iced_graphics = { git = "https://github.com/hecrj/iced", rev = "06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f" }
+iced_style = { git = "https://github.com/hecrj/iced", rev = "06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f" }
 
 [profile.release]
 codegen-units = 1
