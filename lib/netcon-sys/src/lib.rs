@@ -4,7 +4,6 @@
 
 //  Good Resource: https://doxygen.reactos.org/de/d25/otherguids_8c.html
 
-use std::ffi::c_void;
 use winapi::{
     shared::{
         guiddef::{
@@ -138,7 +137,7 @@ RIDL! {
     interface IEnumNetConnection(IEnumNetConnectionVtbl): IUnknown(IUnknownVtbl) {
         fn Next(
             celt: ULONG ,
-            ptr: *mut *mut c_void,
+            ptr: *mut *mut INetConnection,
             pceltFetched: *mut ULONG,
         ) -> HRESULT,
         fn Skip(
