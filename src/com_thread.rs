@@ -1,5 +1,8 @@
 use anyhow::Context;
-use log::info;
+use log::{
+    debug,
+    info,
+};
 use netcon::{
     NetConProperties,
     NetConnection,
@@ -122,13 +125,17 @@ fn find_network_connection(
     connection_manager: &NetConnectionManager,
     adapter_name: &str,
 ) -> std::io::Result<Option<(NetConnection, NetConProperties)>> {
+    let adapter_name = adapter_name.trim_start_matches('{').trim_end_matches('}');
+    debug!("Locating network connection '{}'", adapter_name);
+
     for connection_result in connection_manager.iter()? {
         let connection = connection_result?;
         let properties = connection.get_properties()?;
 
         // Adapter names have the form {<guid>}.
         let formatted_guid = fmt_guid_to_string(properties.guid());
-        if formatted_guid == adapter_name.trim_start_matches('{').trim_end_matches('}') {
+        debug!("Located '{}' | '{}'", String::from_utf16_lossy(properties.raw_name()), formatted_guid);
+        if formatted_guid == adapter_name {
             return Ok(Some((connection, properties)));
         }
     }
