@@ -73,7 +73,6 @@ impl Settings {
                 } else {
                     log::set_max_level(log::LevelFilter::Info);
                 }
-
                 self.debug = debug;
                 Command::none()
             }

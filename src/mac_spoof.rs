@@ -226,20 +226,37 @@ impl Adapter {
                                 hardware_address.unwrap_or("not set")
                             );
 
-                            match self.registry_adapter.get_name() {
-                                Ok(name) => {
+                            match (
+                                self.registry_adapter.get_name(),
+                                self.registry_adapter.get_description(),
+                            ) {
+                                (Ok(name), Ok(description)) => {
                                     self.is_resetting = true;
 
                                     let com_thread = com_thread.clone();
                                     Command::perform(
-                                        async move { com_thread.reset_network_connection(name).await },
+                                        async move {
+                                            com_thread
+                                                .reset_network_connection(name, description.into())
+                                                .await
+                                        },
                                         move |result| {
                                             AdapterMessage::DoneResetting(Arc::new(result))
                                         },
                                     )
                                 }
-                                Err(e) => {
+                                (Err(e), Ok(_)) => {
                                     error!("Failed to get adapter name: {}", e);
+                                    Command::none()
+                                }
+                                (Ok(_), Err(e)) => {
+                                    error!("Failed to get adapter description: {}", e);
+                                    Command::none()
+                                }
+                                (Err(e1), Err(e2)) => {
+                                    error!("Failed to get adapter name: {}", e1);
+                                    error!("Failed to get adapter description: {}", e2);
+
                                     Command::none()
                                 }
                             }

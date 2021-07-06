@@ -54,9 +54,10 @@ use std::{
         TryFrom,
         TryInto,
     },
+    ffi::OsString,
     fmt::Debug,
+    os::windows::ffi::OsStringExt,
     ptr::NonNull,
-    string::FromUtf16Error,
 };
 use winapi::{
     shared::{
@@ -227,8 +228,8 @@ impl NetConProperties {
     }
 
     /// Get the name
-    pub fn name(&self) -> Result<String, FromUtf16Error> {
-        String::from_utf16(self.raw_name())
+    pub fn name(&self) -> OsString {
+        OsString::from_wide(self.raw_name())
     }
 
     /// Get the raw device name.
@@ -244,8 +245,8 @@ impl NetConProperties {
     }
 
     /// Get the device name
-    pub fn device_name(&self) -> Result<String, FromUtf16Error> {
-        String::from_utf16(self.raw_device_name())
+    pub fn device_name(&self) -> OsString {
+        OsString::from_wide(self.raw_device_name())
     }
 
     /// Get the raw connection status
