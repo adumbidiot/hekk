@@ -319,10 +319,7 @@ fn validate_hardware_address(hardware_address: &str) -> anyhow::Result<()> {
     for i in 0..6 {
         for _ in 0..2 {
             let c = iter.next().context("address too short")?;
-            if !('A'..='F').contains(&c)
-                && !('a'..='f').contains(&c)
-                && !('0'..='9').contains(&c)
-            {
+            if !('A'..='F').contains(&c) && !('a'..='f').contains(&c) && !('0'..='9').contains(&c) {
                 anyhow::bail!("invalid char '{}'", c);
             }
         }
