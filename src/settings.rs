@@ -22,10 +22,12 @@ use log::warn;
 #[derive(Debug, Clone)]
 pub enum Message {
     ConsoleToggled(bool),
+    DebugToggled(bool),
 }
 
 pub struct Settings {
     console: Option<ConsoleWindow>,
+    debug: bool,
 
     scroll_state: iced::scrollable::State,
 }
@@ -46,6 +48,7 @@ impl Settings {
 
         Settings {
             console,
+            debug: false,
 
             scroll_state: iced::scrollable::State::new(),
         }
@@ -63,6 +66,17 @@ impl Settings {
                 }
                 Command::none()
             }
+            Message::DebugToggled(debug) => {
+                // TODO: Move to logger so that all data is in one place.
+                if debug {
+                    log::set_max_level(log::LevelFilter::Debug);
+                } else {
+                    log::set_max_level(log::LevelFilter::Info);
+                }
+
+                self.debug = debug;
+                Command::none()
+            }
         }
     }
 
@@ -78,6 +92,8 @@ impl Settings {
                 Message::ConsoleToggled,
             ));
         }
+
+        column = column.push(Checkbox::new(self.debug, "Debug", Message::DebugToggled));
 
         Container::new(
             Scrollable::new(&mut self.scroll_state)

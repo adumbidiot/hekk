@@ -146,8 +146,8 @@ fn format_mac_address(mut f: impl std::fmt::Write, data: &[u8]) -> std::fmt::Res
 }
 
 fn format_mac_address_to_string(address: &[u8]) -> String {
-    // Each u8 maps to 3 ascii chars, "XX-", except the last one. 
-    // We overallocate for simplicity. 
+    // Each u8 maps to 3 ascii chars, "XX-", except the last one.
+    // We overallocate for simplicity.
     let mut ret = String::with_capacity(address.len() * 3);
     format_mac_address(&mut ret, address).expect("failed to format hardware address");
     ret
@@ -161,7 +161,7 @@ fn main() -> anyhow::Result<()> {
         // so there is no eventloop to block.
         eprintln!("failed to set virtual terminal processing: {:?}", e);
     }
-        
+
     crate::logger::setup().context("failed to setup logger")?;
 
     let mut settings = Settings::default();

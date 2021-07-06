@@ -86,9 +86,8 @@ pub fn setup() -> anyhow::Result<()> {
     if let Err(e) = log::set_logger(&*LOGGER) {
         anyhow::bail!("failed to set logger: {}", e);
     }
-    
-    // TODO: Config via settings tab
-    log::set_max_level(log::LevelFilter::Debug); // Info
+
+    log::set_max_level(log::LevelFilter::Info);
 
     Ok(())
 }

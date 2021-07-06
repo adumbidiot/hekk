@@ -134,7 +134,11 @@ fn find_network_connection(
 
         // Adapter names have the form {<guid>}.
         let formatted_guid = fmt_guid_to_string(properties.guid());
-        debug!("Located '{}' | '{}'", String::from_utf16_lossy(properties.raw_name()), formatted_guid);
+        debug!(
+            "Located '{}' | '{}'",
+            String::from_utf16_lossy(properties.raw_name()),
+            formatted_guid
+        );
         if formatted_guid == adapter_name {
             return Ok(Some((connection, properties)));
         }
