@@ -44,10 +44,6 @@ impl Settings {
             }
         }
 
-        if let Err(e) = set_virtual_terminal_processing(true) {
-            warn!("failed to set virtual terminal processing: {:?}", e);
-        }
-
         Settings {
             console,
 
