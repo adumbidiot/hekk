@@ -19,7 +19,12 @@ impl ThreadLogger {
                 log::Level::Warn => {
                     print!("\x1B[93m");
                 }
-                _ => {}
+                log::Level::Debug => {
+                    print!("\x1B[92m");
+                }
+                log::Level::Trace => {
+                    print!("\x1B[96m");
+                }
             }
             print!("[{}] ", level);
             print!("\x1B[0m");
@@ -53,7 +58,7 @@ impl ThreadLogger {
 
 impl log::Log for ThreadLogger {
     fn enabled(&self, metadata: &log::Metadata) -> bool {
-        metadata.target().starts_with("hekk")
+        metadata.target().starts_with("hekk") || metadata.level() <= log::Level::Warn
     }
 
     fn log(&self, record: &log::Record) {
@@ -81,7 +86,7 @@ pub fn setup() -> anyhow::Result<()> {
     if let Err(e) = log::set_logger(&*LOGGER) {
         anyhow::bail!("failed to set logger: {}", e);
     }
-    log::set_max_level(log::LevelFilter::Info);
+    log::set_max_level(log::LevelFilter::Debug);
 
     Ok(())
 }
