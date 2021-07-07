@@ -16,6 +16,7 @@ use std::{
     },
     time::Instant,
 };
+use uuid::Uuid;
 use winapi::shared::guiddef::GUID;
 
 const MAX_BUFFERED_COMMANDS: usize = 32;
@@ -183,8 +184,6 @@ fn find_network_connection(
     // 2nd pass description compare
     for i in 0..connections.len() {
         let (_connection, properties) = &connections[i];
-
-        // Adapter names have the form {<guid>}.
         if properties.device_name() == adapter_description {
             return Ok(Some(connections.swap_remove(i)));
         }
@@ -194,18 +193,9 @@ fn find_network_connection(
 }
 
 pub fn fmt_guid_to_string(guid: &GUID) -> String {
-    format!(
-        "{:02X}-{:02X}-{:02X}-{:02X}{:02X}-{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}",
-        guid.Data1,
-        guid.Data2,
-        guid.Data3,
-        guid.Data4[0],
-        guid.Data4[1],
-        guid.Data4[2],
-        guid.Data4[3],
-        guid.Data4[4],
-        guid.Data4[5],
-        guid.Data4[6],
-        guid.Data4[7],
-    )
+    Uuid::from_fields(guid.Data1, guid.Data2, guid.Data3, &guid.Data4)
+        .expect("a guid was not a valid uuid")
+        .to_hyphenated()
+        .encode_upper(&mut Uuid::encode_buffer())
+        .to_string()
 }
