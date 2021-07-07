@@ -39,6 +39,9 @@ skip = [
     { name = "nix", version = "0.18.0" },
     { name = "libloading", version = "0.6.7" },
     { name = "dlib", version = "0.4.2" },
+    
+    # Blocked on updates to wgpu
+    { name = "hashbrown", version = "0.9.1" }
 ]
 
 # Mostly soundness denies since the advisory lacks a section for soundess bugs

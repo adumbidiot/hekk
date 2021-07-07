@@ -6,4 +6,4 @@ edition = "2018"
 license = "MIT"
 
 [dependencies]
-winapi = { version = "0.3.8", features = [ "winerror", "objbase" ] }
+winapi = { version = "0.3.9", features = [ "winerror", "objbase" ] }

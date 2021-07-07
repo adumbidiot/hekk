@@ -33,6 +33,7 @@ iced_graphics = { git = "https://github.com/hecrj/iced", rev = "06d0158efbaadc5a
 iced_style = { git = "https://github.com/hecrj/iced", rev = "06d0158efbaadc5ae0a6dea22e7a761a3e1c2a8f" }
 
 [profile.release]
+opt-level = 3
 codegen-units = 1
 lto = true
 
