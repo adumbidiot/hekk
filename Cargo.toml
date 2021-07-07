@@ -4,6 +4,7 @@ version = "0.0.0"
 authors = [ "adumbidiot <nathaniel.daniel23@outlook.com>" ]
 edition = "2018"
 license = "MIT"
+resolver = "2"
 
 [dependencies]
 anyhow = "1.0.41"
