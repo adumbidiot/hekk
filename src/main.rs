@@ -207,17 +207,34 @@ impl Default for UserSettings {
     }
 }
 
-fn main() -> anyhow::Result<()> {
-    // Setup colored terminal output
-    if let Err(e) = self::settings::set_virtual_terminal_processing(true)
-        .context("failed to set up virtual terminal processing")
+fn main() {
+    // Setup
     {
-        // Logging is not set up here so just send to stderr.
-        // We do this on the same thread since we haven't launched the gui yet,
-        // so there is no eventloop to block.
-        eprintln!("failed to set virtual terminal processing: {:?}", e);
+        // Setup colored terminal output
+        if let Err(e) = self::settings::set_virtual_terminal_processing(true)
+            .context("failed to set up virtual terminal processing")
+        {
+            // Logging is not set up here so just send to stderr.
+            // We do this on the same thread since we haven't launched the gui yet,
+            // so there is no eventloop to block.
+            eprintln!("failed to set virtual terminal processing: {:?}", e);
+        }
     }
 
+    // TODO: Consider catching panics
+    let exit_code = match real_main() {
+        Ok(()) => 0,
+        Err(e) => {
+            eprintln!("{:?}", e);
+            1
+        }
+    };
+
+    // This actually will only exit on error since winit decides to exit with 0 for us on success.
+    std::process::exit(exit_code);
+}
+
+fn real_main() -> anyhow::Result<()> {
     // Setup logger
     crate::logger::setup().context("failed to setup logger")?;
 
