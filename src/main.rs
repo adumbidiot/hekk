@@ -31,6 +31,8 @@ use iced::{
     Settings,
 };
 use iced_aw::TabLabel;
+use log::warn;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -56,9 +58,9 @@ pub struct App {
 impl Application for App {
     type Executor = iced::executor::Default;
     type Message = Message;
-    type Flags = ();
+    type Flags = UserSettings;
 
-    fn new(_flags: ()) -> (Self, Command<Message>) {
+    fn new(flags: Self::Flags) -> (Self, Command<Message>) {
         // TODO: Restart the com thread or terminate the program when it exits prematurely.
         // TODO: Gracefully handle com thread not spawning somehow instead of panicking.
         let (com_thread, _com_thread_has_exited) =
@@ -67,7 +69,11 @@ impl Application for App {
         let adapters_info = AdaptersInfo::new();
         let mac_spoof = MacSpoof::new(com_thread);
         let resolve_arp = ResolveArp::new();
-        let settings = crate::settings::Settings::new();
+        let mut settings = crate::settings::Settings::new();
+
+        // Copy settings
+        settings.set_console(flags.console);
+        settings.set_debug(flags.debug);
 
         (
             App {
@@ -153,18 +159,79 @@ fn format_mac_address_to_string(address: &[u8]) -> String {
     ret
 }
 
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct UserSettings {
+    pub debug: bool,
+    pub console: bool,
+}
+
+impl UserSettings {
+    pub fn new() -> Self {
+        Self {
+            debug: false,
+            console: true,
+        }
+    }
+
+    pub fn data_dir() -> anyhow::Result<PathBuf> {
+        let path = skylight::get_known_folder_path(skylight::FolderId::LocalAppData)
+            .context("failed to get local app data folder")?
+            .as_os_string();
+        let path = PathBuf::from(path).join("Hekk");
+        Ok(path)
+    }
+
+    pub fn settings_path() -> anyhow::Result<PathBuf> {
+        Ok(Self::data_dir()?.join("settings.toml"))
+    }
+
+    pub fn load() -> anyhow::Result<Self> {
+        let path = Self::settings_path()?;
+        let data = std::fs::read_to_string(path).context("failed to read data")?;
+        toml::from_str(&data).context("failed to deserialize data")
+    }
+
+    pub fn save(&self) -> anyhow::Result<()> {
+        std::fs::create_dir_all(Self::data_dir()?).context("failed to create data dir")?;
+
+        let path = Self::settings_path()?;
+        let data = toml::to_string_pretty(self).context("failed to serialize")?;
+        std::fs::write(path, data).context("failed to write")?;
+        Ok(())
+    }
+}
+
+impl Default for UserSettings {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 fn main() -> anyhow::Result<()> {
     // Setup colored terminal output
-    if let Err(e) = self::settings::set_virtual_terminal_processing(true) {
+    if let Err(e) = self::settings::set_virtual_terminal_processing(true)
+        .context("failed to set up virtual terminal processing")
+    {
         // Logging is not set up here so just send to stderr.
         // We do this on the same thread since we haven't launched the gui yet,
         // so there is no eventloop to block.
         eprintln!("failed to set virtual terminal processing: {:?}", e);
     }
 
+    // Setup logger
     crate::logger::setup().context("failed to setup logger")?;
 
-    let mut settings = Settings::default();
+    // Load settings
+    let user_settings = match UserSettings::load().context("failed to load user settings") {
+        Ok(settings) => settings,
+        Err(e) => {
+            warn!("{:?}", e);
+            warn!("Using default settings...");
+            Default::default()
+        }
+    };
+
+    let mut settings = Settings::with_flags(user_settings);
     settings.window.size = (640, 480);
     App::run(settings).context("failed to run app")?;
     // TODO: Figure out a way to make this run. App::run just kills the program.

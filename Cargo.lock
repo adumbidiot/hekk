@@ -1148,8 +1148,10 @@ dependencies = [
  "log",
  "netcon",
  "once_cell",
- "skylight",
+ "serde",
+ "skylight 0.0.0 (git+https://github.com/adumbidiot/skylight-rs)",
  "tokio",
+ "toml",
  "uuid",
  "winapi",
  "winreg",
@@ -1408,9 +1410,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
-version = "0.2.97"
+version = "0.2.98"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12b8adadd720df158f4d70dfe7ccc6adb0472d7c55ca83445f6a5ab3e36f8fb6"
+checksum = "320cfe77175da3a483efed4bc0adc1968ca050b098ce4f2f1c13a56626128790"
 
 [[package]]
 name = "libloading"
@@ -1633,7 +1635,7 @@ version = "0.0.0"
 dependencies = [
  "bitflags",
  "netcon-sys",
- "skylight",
+ "skylight 0.0.0 (git+https://github.com/adumbidiot/skylight-rs?rev=5b25edce0186ef9fba0dbd0f7008083a20c896b9)",
  "winapi",
 ]
 
@@ -2162,6 +2164,15 @@ dependencies = [
 name = "skylight"
 version = "0.0.0"
 source = "git+https://github.com/adumbidiot/skylight-rs?rev=5b25edce0186ef9fba0dbd0f7008083a20c896b9#5b25edce0186ef9fba0dbd0f7008083a20c896b9"
+dependencies = [
+ "bitflags",
+ "winapi",
+]
+
+[[package]]
+name = "skylight"
+version = "0.0.0"
+source = "git+https://github.com/adumbidiot/skylight-rs#7a5dc0e4c369d85d250eb5046d49e066c1e7ea4c"
 dependencies = [
  "bitflags",
  "winapi",

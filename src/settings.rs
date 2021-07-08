@@ -17,12 +17,19 @@ use iced::{
     Scrollable,
     Text,
 };
-use log::warn;
+use log::{
+    error,
+    info,
+    warn,
+};
+use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub enum Message {
     ConsoleToggled(bool),
     DebugToggled(bool),
+
+    SaveResult(Arc<anyhow::Result<()>>),
 }
 
 pub struct Settings {
@@ -54,26 +61,69 @@ impl Settings {
         }
     }
 
+    /// Set whether the console is shown.
+    ///
+    /// This is a nop if the console window could not be aquired.
+    pub fn set_console(&mut self, show: bool) {
+        if let Some(console) = self.console.as_ref() {
+            if show {
+                console.show_no_activate();
+            } else {
+                console.hide();
+            }
+        }
+    }
+
+    /// Set whether debug info is printed.
+    pub fn set_debug(&mut self, debug: bool) {
+        // TODO: Move to logger so that all data is in one place.
+        if debug {
+            log::set_max_level(log::LevelFilter::Debug);
+        } else {
+            log::set_max_level(log::LevelFilter::Info);
+        }
+        self.debug = debug;
+    }
+
+    pub fn save_settings_command(&self) -> Command<Message> {
+        let data = crate::UserSettings {
+            console: self.console.as_ref().map_or(true, |c| c.is_visible()),
+            debug: self.debug,
+        };
+
+        Command::perform(
+            async move {
+                tokio::task::spawn_blocking(move || {
+                    data.save().context("failed to save user settings")
+                })
+                .await
+                .context("tokio task panicked")??;
+                Ok(())
+            },
+            |r| Message::SaveResult(Arc::new(r)),
+        )
+    }
+
     pub fn update(&mut self, message: Message, _clipboard: &mut Clipboard) -> Command<Message> {
+        // TODO: ratelimit saves somehow
         match message {
             Message::ConsoleToggled(show) => {
-                if let Some(console) = self.console.as_ref() {
-                    if show {
-                        console.show_no_activate();
-                    } else {
-                        console.hide();
-                    }
-                }
-                Command::none()
+                self.set_console(show);
+                self.save_settings_command()
             }
             Message::DebugToggled(debug) => {
-                // TODO: Move to logger so that all data is in one place.
-                if debug {
-                    log::set_max_level(log::LevelFilter::Debug);
-                } else {
-                    log::set_max_level(log::LevelFilter::Info);
+                self.set_debug(debug);
+                self.save_settings_command()
+            }
+            Message::SaveResult(r) => {
+                match r.as_ref() {
+                    Ok(()) => {
+                        info!("Saved user settings");
+                    }
+                    Err(e) => {
+                        error!("{:?}", e);
+                    }
                 }
-                self.debug = debug;
                 Command::none()
             }
         }
