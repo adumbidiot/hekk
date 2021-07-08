@@ -27,7 +27,7 @@ pub type ComThreadResultSender<T> = tokio::sync::oneshot::Sender<T>;
 #[derive(Debug)]
 enum ComCommand {
     ResetNetworkConnection {
-        adapter_name: String,
+        adapter_name: Uuid,
         adapter_description: OsString,
         responder: ComThreadResultSender<anyhow::Result<()>>,
     },
@@ -85,14 +85,20 @@ impl ComThread {
     /// Returns an error if the adpater could not be located or restarted.
     pub async fn reset_network_connection(
         &self,
-        adapter_name: String,
+        adapter_name: &str,
         adapter_description: OsString,
     ) -> anyhow::Result<()> {
         let start = Instant::now();
         let (responder, rx) = tokio::sync::oneshot::channel();
+
+        // Adapter names have the form {<guid>}.
+        let adapter_name =
+            Uuid::parse_str(adapter_name.trim_start_matches('{').trim_end_matches('}'))
+                .context("adapter name is not a guid")?;
+
         self.command_tx
             .send(ComCommand::ResetNetworkConnection {
-                adapter_name: adapter_name.clone(),
+                adapter_name,
                 adapter_description: adapter_description.clone(),
                 responder,
             })
@@ -118,7 +124,7 @@ fn process_command(connection_manager: &NetConnectionManager, command: ComComman
             responder,
         } => {
             let result =
-                reset_network_connection(connection_manager, &adapter_name, &adapter_description);
+                reset_network_connection(connection_manager, adapter_name, &adapter_description);
             let _ = responder.send(result).is_ok();
         }
     }
@@ -126,7 +132,7 @@ fn process_command(connection_manager: &NetConnectionManager, command: ComComman
 
 fn reset_network_connection(
     connection_manager: &NetConnectionManager,
-    adapter_name: &str,
+    adapter_name: Uuid,
     adapter_description: &OsStr,
 ) -> anyhow::Result<()> {
     let (connection, _properties) =
@@ -142,10 +148,9 @@ fn reset_network_connection(
 
 fn find_network_connection(
     connection_manager: &NetConnectionManager,
-    adapter_name: &str,
+    adapter_name: Uuid,
     adapter_description: &OsStr,
 ) -> std::io::Result<Option<(NetConnection, NetConProperties)>> {
-    let adapter_name = adapter_name.trim_start_matches('{').trim_end_matches('}');
     debug!("Locating network connection '{}'", adapter_name);
 
     // Store all connections and properties in buffer
@@ -155,11 +160,10 @@ fn find_network_connection(
         let properties = connection.get_properties()?;
 
         // TODO: add wrapper to format wide slice without allocating
-        let formatted_guid = fmt_guid_to_string(properties.guid());
         debug!(
             "Located '{}' | '{}' | '{}'",
             properties.name().to_string_lossy(),
-            formatted_guid,
+            guid_to_uuid(*properties.guid()),
             properties.device_name().to_string_lossy(),
         );
 
@@ -169,9 +173,7 @@ fn find_network_connection(
     // 1st pass guid compare
     for i in 0..connections.len() {
         let (_connection, properties) = &connections[i];
-        // Adapter names have the form {<guid>}.
-        let formatted_guid = fmt_guid_to_string(properties.guid());
-        if formatted_guid == adapter_name {
+        if guid_to_uuid(*properties.guid()) == adapter_name {
             return Ok(Some(connections.swap_remove(i)));
         }
     }
@@ -192,10 +194,8 @@ fn find_network_connection(
     Ok(None)
 }
 
-pub fn fmt_guid_to_string(guid: &GUID) -> String {
+pub fn guid_to_uuid(guid: GUID) -> Uuid {
+    // This should be infallible
     Uuid::from_fields(guid.Data1, guid.Data2, guid.Data3, &guid.Data4)
         .expect("a guid was not a valid uuid")
-        .to_hyphenated()
-        .encode_upper(&mut Uuid::encode_buffer())
-        .to_string()
 }

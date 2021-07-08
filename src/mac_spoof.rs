@@ -237,7 +237,7 @@ impl Adapter {
                                     Command::perform(
                                         async move {
                                             com_thread
-                                                .reset_network_connection(name, description.into())
+                                                .reset_network_connection(&name, description.into())
                                                 .await
                                         },
                                         move |result| {
