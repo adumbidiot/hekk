@@ -1149,7 +1149,7 @@ dependencies = [
  "netcon",
  "once_cell",
  "serde",
- "skylight 0.0.0 (git+https://github.com/adumbidiot/skylight-rs)",
+ "skylight",
  "tokio",
  "toml",
  "uuid",
@@ -1635,7 +1635,7 @@ version = "0.0.0"
 dependencies = [
  "bitflags",
  "netcon-sys",
- "skylight 0.0.0 (git+https://github.com/adumbidiot/skylight-rs?rev=5b25edce0186ef9fba0dbd0f7008083a20c896b9)",
+ "skylight",
  "winapi",
 ]
 
@@ -2158,15 +2158,6 @@ dependencies = [
  "expat-sys",
  "freetype-sys",
  "pkg-config",
-]
-
-[[package]]
-name = "skylight"
-version = "0.0.0"
-source = "git+https://github.com/adumbidiot/skylight-rs?rev=5b25edce0186ef9fba0dbd0f7008083a20c896b9#5b25edce0186ef9fba0dbd0f7008083a20c896b9"
-dependencies = [
- "bitflags",
- "winapi",
 ]
 
 [[package]]
