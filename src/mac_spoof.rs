@@ -225,7 +225,7 @@ impl Adapter {
                             Command::none()
                         } else {
                             info!(
-                                "Set Hardware Address to {}",
+                                "Set Hardware Address to '{}'",
                                 hardware_address.as_deref().unwrap_or("not set")
                             );
                             
