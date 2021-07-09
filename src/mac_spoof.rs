@@ -209,7 +209,7 @@ impl Adapter {
                         .parse::<MacAddr>()
                         .map_err(anyhow::Error::from)
                         .map(|hardware_address| format!("{:-}", hardware_address))
-                        .map(|hardware_address| Some(hardware_address))
+                        .map(Some)
                 };
 
                 match hardware_address {
