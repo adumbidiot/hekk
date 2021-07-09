@@ -57,7 +57,19 @@ impl RegistryAdapter {
     pub fn set_hardware_address(&self, hardware_address: Option<&str>) -> std::io::Result<()> {
         match hardware_address {
             Some(hardware_address) => self.key.set_value(Self::HW_ADDRESS_KEY, &hardware_address),
-            None => self.key.delete_value(Self::HW_ADDRESS_KEY),
+            None => {
+                match self.key.delete_value(Self::HW_ADDRESS_KEY) {
+                    Ok(()) => Ok(()),
+                    Err(e) => {
+                        // It is already unset
+                        if e.kind() == std::io::ErrorKind::NotFound {
+                            Ok(())
+                        } else {
+                            Err(e)
+                        }
+                    }
+                }
+            }
         }
     }
 

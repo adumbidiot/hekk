@@ -24,6 +24,7 @@ use log::{
     error,
     info,
 };
+use macaddr::MacAddr;
 use std::{
     sync::Arc,
     time::Instant,
@@ -200,20 +201,22 @@ impl Adapter {
             }
             AdapterMessage::SetHardwareAddress => {
                 let hardware_address = if self.hardware_address.is_empty() {
-                    None
+                    Ok(None)
                 } else {
-                    Some(self.hardware_address.as_str().trim())
+                    self.hardware_address
+                        .as_str()
+                        .trim()
+                        .parse::<MacAddr>()
+                        .map_err(anyhow::Error::from)
+                        .map(|hardware_address| format!("{:-}", hardware_address))
+                        .map(Some)
                 };
 
-                match hardware_address
-                    .as_deref()
-                    .map(validate_hardware_address)
-                    .unwrap_or(Ok(()))
-                {
-                    Ok(()) => {
+                match hardware_address {
+                    Ok(hardware_address) => {
                         if let Err(e) = self
                             .registry_adapter
-                            .set_hardware_address(hardware_address)
+                            .set_hardware_address(hardware_address.as_deref())
                             .context("failed to set hardware address")
                         {
                             // TODO: Give user visual feedback. Modal?
@@ -222,24 +225,44 @@ impl Adapter {
                             Command::none()
                         } else {
                             info!(
-                                "Set Hardware Address to {}",
-                                hardware_address.unwrap_or("not set")
+                                "Set Hardware Address to '{}'",
+                                hardware_address.as_deref().unwrap_or("not set")
                             );
 
-                            match self.registry_adapter.get_name() {
-                                Ok(name) => {
+                            self.hardware_address =
+                                hardware_address.unwrap_or_else(|| "not set".into());
+
+                            match (
+                                self.registry_adapter.get_name(),
+                                self.registry_adapter.get_description(),
+                            ) {
+                                (Ok(name), Ok(description)) => {
                                     self.is_resetting = true;
 
                                     let com_thread = com_thread.clone();
                                     Command::perform(
-                                        async move { com_thread.reset_network_connection(name).await },
+                                        async move {
+                                            com_thread
+                                                .reset_network_connection(&name, description.into())
+                                                .await
+                                        },
                                         move |result| {
                                             AdapterMessage::DoneResetting(Arc::new(result))
                                         },
                                     )
                                 }
-                                Err(e) => {
+                                (Err(e), Ok(_)) => {
                                     error!("Failed to get adapter name: {}", e);
+                                    Command::none()
+                                }
+                                (Ok(_), Err(e)) => {
+                                    error!("Failed to get adapter description: {}", e);
+                                    Command::none()
+                                }
+                                (Err(e1), Err(e2)) => {
+                                    error!("Failed to get adapter name: {}", e1);
+                                    error!("Failed to get adapter description: {}", e2);
+
                                     Command::none()
                                 }
                             }
@@ -247,7 +270,7 @@ impl Adapter {
                     }
                     Err(e) => {
                         // TODO: Give user visual feedback
-                        error!("Invalid MAC Address: {}", e);
+                        error!("Invalid MAC Address: {:?}", e);
                         Command::none()
                     }
                 }
@@ -310,27 +333,4 @@ impl Adapter {
 
         column.into()
     }
-}
-
-/// Validates a mac address so that it is in the form XX-XX-XX-XX-XX-XX where X is a capital alphanumeric between A and F.
-fn validate_hardware_address(hardware_address: &str) -> anyhow::Result<()> {
-    let mut iter = hardware_address.chars();
-
-    for i in 0..6 {
-        for _ in 0..2 {
-            let c = iter.next().context("address too short")?;
-            if !('A'..='F').contains(&c) && !('a'..='f').contains(&c) {
-                anyhow::bail!("invalid char '{}'", c);
-            }
-        }
-
-        if i != 5 {
-            let c = iter.next().context("missing `-`")?;
-            if c != '-' {
-                anyhow::bail!("expected '-', got '{}'", c);
-            }
-        }
-    }
-
-    Ok(())
 }

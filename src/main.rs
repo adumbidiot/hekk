@@ -31,6 +31,12 @@ use iced::{
     Settings,
 };
 use iced_aw::TabLabel;
+use log::warn;
+use macaddr::MacAddr;
+use std::{
+    convert::TryInto,
+    path::PathBuf,
+};
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -56,9 +62,9 @@ pub struct App {
 impl Application for App {
     type Executor = iced::executor::Default;
     type Message = Message;
-    type Flags = ();
+    type Flags = UserSettings;
 
-    fn new(_flags: ()) -> (Self, Command<Message>) {
+    fn new(flags: Self::Flags) -> (Self, Command<Message>) {
         // TODO: Restart the com thread or terminate the program when it exits prematurely.
         // TODO: Gracefully handle com thread not spawning somehow instead of panicking.
         let (com_thread, _com_thread_has_exited) =
@@ -67,7 +73,11 @@ impl Application for App {
         let adapters_info = AdaptersInfo::new();
         let mac_spoof = MacSpoof::new(com_thread);
         let resolve_arp = ResolveArp::new();
-        let settings = crate::settings::Settings::new();
+        let mut settings = crate::settings::Settings::new();
+
+        // Copy settings
+        settings.set_console(flags.console);
+        settings.set_debug(flags.debug);
 
         (
             App {
@@ -134,6 +144,17 @@ impl Application for App {
 }
 
 fn format_mac_address(mut f: impl std::fmt::Write, data: &[u8]) -> std::fmt::Result {
+    let v6_addr: Result<[u8; 6], _> = data.try_into();
+    if let Ok(addr) = v6_addr {
+        return write!(f, "{:-}", MacAddr::from(addr));
+    }
+
+    let v8_addr: Result<[u8; 8], _> = data.try_into();
+    if let Ok(addr) = v8_addr {
+        return write!(f, "{:-}", MacAddr::from(addr));
+    }
+
+    // Backup fmt
     for (i, b) in data.iter().enumerate() {
         if i == data.len() - 1 {
             write!(f, "{:02X}", b)?;
@@ -142,19 +163,108 @@ fn format_mac_address(mut f: impl std::fmt::Write, data: &[u8]) -> std::fmt::Res
         }
     }
     writeln!(f)?;
+
     Ok(())
 }
 
 fn format_mac_address_to_string(address: &[u8]) -> String {
-    let mut ret = String::with_capacity(address.len() * 2);
+    // Each u8 maps to 3 ascii chars, "XX-", except the last one.
+    // We overallocate for simplicity.
+    let mut ret = String::with_capacity(address.len() * 3);
     format_mac_address(&mut ret, address).expect("failed to format hardware address");
     ret
 }
 
-fn main() -> anyhow::Result<()> {
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct UserSettings {
+    pub debug: bool,
+    pub console: bool,
+}
+
+impl UserSettings {
+    pub fn new() -> Self {
+        Self {
+            debug: false,
+            console: true,
+        }
+    }
+
+    pub fn data_dir() -> anyhow::Result<PathBuf> {
+        let path = skylight::get_known_folder_path(skylight::FolderId::LocalAppData)
+            .context("failed to get local app data folder")?
+            .as_os_string();
+        let path = PathBuf::from(path).join("Hekk");
+        Ok(path)
+    }
+
+    pub fn settings_path() -> anyhow::Result<PathBuf> {
+        Ok(Self::data_dir()?.join("settings.toml"))
+    }
+
+    pub fn load() -> anyhow::Result<Self> {
+        let path = Self::settings_path()?;
+        let data = std::fs::read_to_string(path).context("failed to read data")?;
+        toml::from_str(&data).context("failed to deserialize data")
+    }
+
+    pub fn save(&self) -> anyhow::Result<()> {
+        std::fs::create_dir_all(Self::data_dir()?).context("failed to create data dir")?;
+
+        let path = Self::settings_path()?;
+        let data = toml::to_string_pretty(self).context("failed to serialize")?;
+        std::fs::write(path, data).context("failed to write")?;
+        Ok(())
+    }
+}
+
+impl Default for UserSettings {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+fn main() {
+    // Setup
+    {
+        // Setup colored terminal output
+        if let Err(e) = self::settings::set_virtual_terminal_processing(true)
+            .context("failed to set up virtual terminal processing")
+        {
+            // Logging is not set up here so just send to stderr.
+            // We do this on the same thread since we haven't launched the gui yet,
+            // so there is no eventloop to block.
+            eprintln!("failed to set virtual terminal processing: {:?}", e);
+        }
+    }
+
+    // TODO: Consider catching panics
+    let exit_code = match real_main() {
+        Ok(()) => 0,
+        Err(e) => {
+            eprintln!("{:?}", e);
+            1
+        }
+    };
+
+    // This actually will only exit on error since winit decides to exit with 0 for us on success.
+    std::process::exit(exit_code);
+}
+
+fn real_main() -> anyhow::Result<()> {
+    // Setup logger
     crate::logger::setup().context("failed to setup logger")?;
 
-    let mut settings = Settings::default();
+    // Load settings
+    let user_settings = match UserSettings::load().context("failed to load user settings") {
+        Ok(settings) => settings,
+        Err(e) => {
+            warn!("{:?}", e);
+            warn!("Using default settings...");
+            Default::default()
+        }
+    };
+
+    let mut settings = Settings::with_flags(user_settings);
     settings.window.size = (640, 480);
     App::run(settings).context("failed to run app")?;
     // TODO: Figure out a way to make this run. App::run just kills the program.
