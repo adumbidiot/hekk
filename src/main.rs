@@ -148,7 +148,7 @@ fn format_mac_address(mut f: impl std::fmt::Write, data: &[u8]) -> std::fmt::Res
     if let Ok(addr) = v6_addr {
         return write!(f, "{:-}", MacAddr::from(addr));
     }
-    
+
     let v8_addr: Result<[u8; 8], _> = data.try_into();
     if let Ok(addr) = v8_addr {
         return write!(f, "{:-}", MacAddr::from(addr));
@@ -163,7 +163,7 @@ fn format_mac_address(mut f: impl std::fmt::Write, data: &[u8]) -> std::fmt::Res
         }
     }
     writeln!(f)?;
-    
+
     Ok(())
 }
 
