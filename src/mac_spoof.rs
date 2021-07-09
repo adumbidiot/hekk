@@ -228,8 +228,9 @@ impl Adapter {
                                 "Set Hardware Address to '{}'",
                                 hardware_address.as_deref().unwrap_or("not set")
                             );
-                            
-                            self.hardware_address = hardware_address.unwrap_or_else(|| "not set".into());
+
+                            self.hardware_address =
+                                hardware_address.unwrap_or_else(|| "not set".into());
 
                             match (
                                 self.registry_adapter.get_name(),
