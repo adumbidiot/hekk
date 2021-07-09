@@ -32,7 +32,11 @@ use iced::{
 };
 use iced_aw::TabLabel;
 use log::warn;
-use std::path::PathBuf;
+use macaddr::MacAddr;
+use std::{
+    convert::TryInto,
+    path::PathBuf,
+};
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -140,6 +144,17 @@ impl Application for App {
 }
 
 fn format_mac_address(mut f: impl std::fmt::Write, data: &[u8]) -> std::fmt::Result {
+    let v6_addr: Result<[u8; 6], _> = data.try_into();
+    if let Ok(addr) = v6_addr {
+        return write!(f, "{:-}", MacAddr::from(addr));
+    }
+    
+    let v8_addr: Result<[u8; 8], _> = data.try_into();
+    if let Ok(addr) = v8_addr {
+        return write!(f, "{:-}", MacAddr::from(addr));
+    }
+
+    // Backup fmt
     for (i, b) in data.iter().enumerate() {
         if i == data.len() - 1 {
             write!(f, "{:02X}", b)?;
@@ -148,6 +163,7 @@ fn format_mac_address(mut f: impl std::fmt::Write, data: &[u8]) -> std::fmt::Res
         }
     }
     writeln!(f)?;
+    
     Ok(())
 }
 
