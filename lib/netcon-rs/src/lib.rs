@@ -113,6 +113,14 @@ impl NetConnectionManager {
     }
 }
 
+impl Drop for NetConnectionManager {
+    fn drop(&mut self) {
+        unsafe {
+            self.0.as_ref().Release();
+        }
+    }
+}
+
 /// An enumerator over [`NetConnection`]s.
 #[repr(transparent)]
 pub struct EnumNetConnection(NonNull<IEnumNetConnection>);
@@ -161,6 +169,14 @@ impl Iterator for EnumNetConnection {
     }
 }
 
+impl Drop for EnumNetConnection {
+    fn drop(&mut self) {
+        unsafe {
+            self.0.as_ref().Release();
+        }
+    }
+}
+
 /// A network connection
 #[repr(transparent)]
 pub struct NetConnection(NonNull<INetConnection>);
@@ -202,6 +218,14 @@ impl std::fmt::Debug for NetConnection {
         fmt.debug_struct("NetConnection")
             .field("properties", &self.get_properties())
             .finish()
+    }
+}
+
+impl Drop for NetConnection {
+    fn drop(&mut self) {
+        unsafe {
+            self.0.as_ref().Release();
+        }
     }
 }
 
