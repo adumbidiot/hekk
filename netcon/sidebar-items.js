@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["MediaType","The Connection Type"],["NetConStatus","The connection status"]],"struct":[["EnumNetConnection","An enumerator over [`NetConnection`]s."],["NetConCharacteristicFlags",""],["NetConProperties","Network Connection Properties"],["NetConnection","A network connection"],["NetConnectionManager","A Manager for network connections"]]});

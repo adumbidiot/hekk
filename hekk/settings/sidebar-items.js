@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Message",""]],"fn":[["set_quick_edit_mode","Set the quick edit mode of the attached console."],["set_virtual_terminal_processing",""]],"struct":[["Settings",""]]});

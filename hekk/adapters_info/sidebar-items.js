@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Message",""]],"fn":[["ip_address_list_view",""]],"struct":[["AdapterState",""],["AdaptersInfo",""],["IpAddress",""]]});

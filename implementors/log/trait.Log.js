@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["hekk"] = [{"text":"impl <a class=\"trait\" href=\"https://docs.rs/log/0.4.14/log/trait.Log.html\" title=\"trait log::Log\">Log</a> for <a class=\"struct\" href=\"hekk/logger/struct.ThreadLogger.html\" title=\"struct hekk::logger::ThreadLogger\">ThreadLogger</a>","synthetic":false,"types":["hekk::logger::ThreadLogger"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

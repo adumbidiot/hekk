@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["hekk"] = [{"text":"impl StyleSheet for <a class=\"struct\" href=\"hekk/style/struct.GreyStyleCopyTextHack.html\" title=\"struct hekk::style::GreyStyleCopyTextHack\">GreyStyleCopyTextHack</a>","synthetic":false,"types":["hekk::style::GreyStyleCopyTextHack"]},{"text":"impl StyleSheet for <a class=\"struct\" href=\"hekk/style/struct.ForegroundGreenTextInputStyle.html\" title=\"struct hekk::style::ForegroundGreenTextInputStyle\">ForegroundGreenTextInputStyle</a>","synthetic":false,"types":["hekk::style::ForegroundGreenTextInputStyle"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

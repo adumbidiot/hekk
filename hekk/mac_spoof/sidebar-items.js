@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["AdapterMessage",""],["Message",""]],"struct":[["Adapter",""],["MacSpoof",""]]});
