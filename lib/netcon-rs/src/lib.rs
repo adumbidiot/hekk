@@ -49,6 +49,7 @@ use netcon_sys::{
     NCS_MEDIA_DISCONNECTED,
     NETCON_PROPERTIES,
 };
+use skylight::HResult;
 use std::{
     convert::{
         TryFrom,
@@ -87,13 +88,12 @@ pub struct NetConnectionManager(NonNull<INetConnectionManager>);
 
 impl NetConnectionManager {
     /// Make a new [`NetConnectionManager`].
-    pub fn new() -> std::io::Result<Self> {
+    pub fn new() -> Result<Self, HResult> {
         let ptr: *mut INetConnectionManager = unsafe {
             skylight::create_instance(
                 &CLSID_ConnectionManager,
                 CLSCTX_LOCAL_SERVER | CLSCTX_NO_CODE_DOWNLOAD,
-            )
-            .map_err(std::io::Error::from_raw_os_error)?
+            )?
         };
 
         Ok(NetConnectionManager(
@@ -102,14 +102,14 @@ impl NetConnectionManager {
     }
 
     /// Iterate over [`NetConnection`]s.
-    pub fn iter(&self) -> std::io::Result<EnumNetConnection> {
+    pub fn iter(&self) -> Result<EnumNetConnection, HResult> {
         let mut ptr = std::ptr::null_mut();
         let code = unsafe { self.0.as_ref().EnumConnections(NCME_DEFAULT, &mut ptr) };
         if FAILED(code) {
-            return Err(std::io::Error::from_raw_os_error(code));
+            return Err(HResult::from(code));
         }
-
-        Ok(EnumNetConnection(NonNull::new(ptr).expect("ptr is null")))
+        let ptr = NonNull::new(ptr).expect("ptr is null");
+        Ok(EnumNetConnection(ptr))
     }
 }
 
@@ -128,7 +128,7 @@ pub struct EnumNetConnection(NonNull<IEnumNetConnection>);
 impl EnumNetConnection {
     // TODO: Allow the user to generically specify how many items they want instead of only retrieving one at a time.
     /// Get the next connection.
-    pub fn next_connection(&self) -> std::io::Result<Option<NetConnection>> {
+    pub fn next_connection(&self) -> Result<Option<NetConnection>, HResult> {
         let mut ptr = std::ptr::null_mut();
         let mut num_recieved = 0;
         let ret = unsafe { self.0.as_ref().Next(1, &mut ptr, &mut num_recieved) };
@@ -138,31 +138,31 @@ impl EnumNetConnection {
             (S_OK, 0) => Ok(None), // no items returned, yet successful. Assume no more items.
             (S_OK, _) => Ok(Some(NetConnection(NonNull::new(ptr).expect("ptr is null")))),
             (S_FALSE, _) => Ok(None), // the enumerator has signaled that it is done. num_recieved should be 0.
-            _ => Err(std::io::Error::from_raw_os_error(ret)), // An error occured.
+            _ => Err(HResult::from(ret)), // An error occured.
         }
     }
 
     /// Skip connections
-    pub fn skip_connection(&self, n: u32) -> std::io::Result<()> {
+    pub fn skip_connection(&self, n: u32) -> Result<(), HResult> {
         let code = unsafe { self.0.as_ref().Skip(n) };
         if FAILED(code) {
-            return Err(std::io::Error::from_raw_os_error(code));
+            return Err(HResult::from(code));
         }
         Ok(())
     }
 
     /// Reset this object
-    pub fn reset(&self) -> std::io::Result<()> {
+    pub fn reset(&self) -> Result<(), HResult> {
         let code = unsafe { self.0.as_ref().Reset() };
         if FAILED(code) {
-            return Err(std::io::Error::from_raw_os_error(code));
+            return Err(HResult::from(code));
         }
         Ok(())
     }
 }
 
 impl Iterator for EnumNetConnection {
-    type Item = std::io::Result<NetConnection>;
+    type Item = Result<NetConnection, HResult>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.next_connection().transpose()
@@ -183,31 +183,31 @@ pub struct NetConnection(NonNull<INetConnection>);
 
 impl NetConnection {
     /// Get the properties for this connection.
-    pub fn get_properties(&self) -> Result<NetConProperties, std::io::Error> {
+    pub fn get_properties(&self) -> Result<NetConProperties, HResult> {
         let mut ptr = std::ptr::null_mut();
         let code = unsafe { self.0.as_ref().GetProperties(&mut ptr) };
 
         if FAILED(code) {
-            return Err(std::io::Error::from_raw_os_error(code));
+            return Err(HResult::from(code));
         }
 
         Ok(NetConProperties(NonNull::new(ptr).expect("ptr is null")))
     }
 
     /// Connect a connection.
-    pub fn connect(&self) -> std::io::Result<()> {
+    pub fn connect(&self) -> Result<(), HResult> {
         let code = unsafe { self.0.as_ref().Connect() };
         if FAILED(code) {
-            return Err(std::io::Error::from_raw_os_error(code));
+            return Err(HResult::from(code));
         }
         Ok(())
     }
 
     /// Disconnect a connection.
-    pub fn disconnect(&self) -> std::io::Result<()> {
+    pub fn disconnect(&self) -> Result<(), HResult> {
         let code = unsafe { self.0.as_ref().Disconnect() };
         if FAILED(code) {
-            return Err(std::io::Error::from_raw_os_error(code));
+            return Err(HResult::from(code));
         }
         Ok(())
     }
