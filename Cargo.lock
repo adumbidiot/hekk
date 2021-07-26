@@ -2170,7 +2170,7 @@ dependencies = [
 [[package]]
 name = "skylight"
 version = "0.0.0"
-source = "git+https://github.com/adumbidiot/skylight-rs#7a5dc0e4c369d85d250eb5046d49e066c1e7ea4c"
+source = "git+https://github.com/adumbidiot/skylight-rs#972afb456817c0584145c84d16d925539de05fbf"
 dependencies = [
  "bitflags",
  "winapi",
