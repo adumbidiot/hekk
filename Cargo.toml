@@ -19,7 +19,7 @@ netcon = { path = "lib/netcon-rs" }
 once_cell = "1.8.0"
 serde = { version = "1.0.127", features = [ "derive" ] }
 skylight = { git = "https://github.com/adumbidiot/skylight-rs", features = [ "objbase", "shlobj" ] }
-tokio = { version = "1.9.0", features = [ "sync" ] }
+tokio = { version = "1.10.0", features = [ "sync" ] }
 toml = "0.5.8"
 uuid = "0.8.2"
 winapi = "0.3.9"
