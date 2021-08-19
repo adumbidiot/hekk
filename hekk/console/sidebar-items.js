@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["ConsoleHandleType",""]],"struct":[["ConsoleHandle","A Handle to a console stream Resource: https://github.com/npocmaka/batch.scripts/blob/master/hybrids/.net/c/quickEdit.bat"],["ConsoleModeFlags",""],["ConsoleWindow",""]]});

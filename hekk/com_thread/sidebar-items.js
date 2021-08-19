@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["MAX_BUFFERED_COMMANDS",""]],"enum":[["ComCommand",""]],"fn":[["find_network_connection",""],["guid_to_uuid",""],["process_command",""],["reset_network_connection",""]],"struct":[["ComThread","A COM thread handle. It can be used to issue commands to the COM thread."]],"type":[["ComThreadHasExited",""],["ComThreadResultSender",""]]});
